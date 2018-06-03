@@ -31,11 +31,12 @@ import java.util.StringTokenizer;
  *<UL>
  * <LI> Message to server is in response to a {@link SOCMakeOffer} sent earlier this turn to client.
  * <LI> Server's response (announced to game) is {@link SOCPlayerElement}s, {@link SOCGameServerText},
- *      then the {@code AcceptOffer}, then {@link SOCClearOffer}s.
+ *      {@code AcceptOffer}, then {@link SOCClearOffer}s.
  *</UL>
  *<P>
  * Before v2.0.00 the server announced the {@code SOCClearOffer}s before {@code SOCAcceptOffer}. The old
  * non-robot clients ignored that {@code SOCAcceptOffer}, so changing the order has no effect on them.
+ *
  * @author Robert S. Thomas
  * @see SOCRejectOffer
  */
@@ -61,7 +62,7 @@ public class SOCAcceptOffer extends SOCMessage
     private int offering;
 
     /**
-     * Create a AcceptOffer message.
+     * Create an AcceptOffer message.
      *
      * @param ga  the name of the game
      * @param ac  the player number of the accepting player.
@@ -85,8 +86,8 @@ public class SOCAcceptOffer extends SOCMessage
     }
 
     /**
-     * Get the player number accepting the trade offer
-     * from {@link #getOfferingNumber()}.
+     * Get the player number accepting the trade offered by
+     * {@link #getOfferingNumber()}.
      * @return the number of the accepting player from server,
      *     or any value sent from client (not used by server)
      */

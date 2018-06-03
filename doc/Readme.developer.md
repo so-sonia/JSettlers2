@@ -220,7 +220,12 @@ other IDEs.
 - Browse to jsettlers-2.x.xx-src/build.xml, select the "javac" task in target "compile".
 - Check the box "Link to the buildfile in the file system"
 - Hit Finish.
-- Project -> Properties: Resource: Text file encoding: UTF-8 -> OK
+- Project -> Properties
+    - Resource: Text file encoding: UTF-8
+    - Java Compiler: JDK compliance
+    	- Compliance level: 1.5
+    - OK
+    	- If eclipse asks "Build the project now?", hit Yes
 - To add the `resources` directory:
      - In the Package Explorer tree right-click the project name -> New ->
        Folder. In that dialog click Advanced, select the radio button
@@ -235,7 +240,9 @@ other IDEs.
 - You'll need to run the `build` target once before you run JSettlers,
   to copy resources into `target` from `src/main/resources/`.
 
-Continue reading to see how to set up the builds and the coding style in Eclipse.
+Continue reading to see how to set up the builds and the run configs in Eclipse.
+A later section walks through the coding style expected for pull requests or
+patch submissions.
 
 
 ## Build Setup and Results
@@ -280,18 +287,18 @@ fail with this error:
 
 In my IDE's JSettlers project, I've created these debug/run configurations:
 
-    Java applet: soc.client.SOCApplet
+    Java applet: soc.client.SOCApplet   [optional, rarely used]
         width 700, height 500
         parameters: PORT = 8880
 
     Java applications:
         cli-noargs: soc.client.SOCPlayerClient
+            vm arguments: -Djsettlers.debug.traffic=Y
 
         socserver: soc.server.SOCServer
-            arguments: -o N7=t7 -o RD=y -Djsettlers.startrobots=7
-                -Djsettlers.allow.debug=Y 8880 20 dbuser dbpass
+            arguments: -o N7=t7 -Djsettlers.startrobots=7 -Djsettlers.allow.debug=Y
 
-        socserver-sqlite (_optional_): soc.server.SOCServer
+        socserver-sqlite: soc.server.SOCServer   [optional]
             arguments: -o N7=t7 -o RD=y -Djsettlers.db.url=jdbc:sqlite:jsettlers.sqlite
                 -Djsettlers.startrobots=7 -Djsettlers.allow.debug=Y
                 -Djsettlers.accounts.admins=adm 8880 20 dbuser dbpass
@@ -311,18 +318,20 @@ For automated functional testing, the project also includes the script
 you are developing anything related to game options or jsettlers properties.
 
 
-## To configure a sqlite database for testing
+## To configure a sqlite database for testing (optional)
 
-These instructions are written for Eclipse 3.6. See also the "Developing with a
-database (JDBC)" section of this readme. JSettlers+sqlite works with standard
-Eclipse; the j2ee eclipse also has a convenient data browser. Note that
+This is optional. See also the "Developing with a database (JDBC)" section
+of this readme.
+
+These instructions are written for Eclipse 3.6. JSettlers+sqlite works with
+standard Eclipse; the j2ee Eclipse adds a convenient data browser. Note that
 [Readme.md](../Readme.md) mentions a command-line option
 `-Djsettlers.db.jar=driverfile.jar`; that's needed only while running the
 jsettlers JAR from the command line, not running inside the IDE.
 
 - See the `socserver-sqlite` IDE Run Configuration in the previous section;
   this config includes the sqlite database you're about to configure.
-- Download the driver from https://bitbucket.org/xerial/sqlite-jdbc.
+- Download the driver from https://bitbucket.org/xerial/sqlite-jdbc/downloads/ .
   The downloaded JAR might have a name like `sqlite-jdbc-3.15.1.jar`.
   These instructions use a generic name `sqlite-jdbc-3.xx.y`.
 - Project properties -> Java build path -> Libraries -> Add External JARs ->
@@ -722,10 +731,7 @@ You will also want this to have this, which disables auto-reindenting:
     [x] show print margin
     print margin column: 120
     [x] show whitespace characters
-        configure visibility -> trailing space, trailing ideographic space, trailing tab
-
-    project properties -> java compiler -> configure workspace settings
-        compiler compliance level: 1.5
+        configure visibility -> trailing space, trailing ideographic space, leading tab, trailing tab
 
     prefs -> java -> code style -> formatter
         Click "Enable Project Specific Settings", then New
