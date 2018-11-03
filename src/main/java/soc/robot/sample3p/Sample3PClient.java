@@ -19,6 +19,7 @@
  */
 package soc.robot.sample3p;
 
+import soc.disableDebug.D;
 import soc.game.SOCGame;
 import soc.message.SOCMessage;
 import soc.robot.SOCRobotBrain;
@@ -80,6 +81,12 @@ public class Sample3PClient extends SOCRobotClient
         super(h, p, nn, pw, co);
 
         rbclass = RBCLASSNAME_SAMPLE;
+    }
+    
+    public void treat(SOCMessage mes) {
+    	D.ebugPrintln("mes - " + mes);
+    	System.err.println("mes - " + mes);
+    	super.treat(mes);
     }
 
     /**

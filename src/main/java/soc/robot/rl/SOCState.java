@@ -102,6 +102,11 @@ public class SOCState {
 		public void setResources(int[] resources) {
 			this.resources = resources;
 		}
+		public void copyResources(int[] resources) {
+			for (int i=0; i< this.resources.length ; i++) {
+				this.resources[i] = resources[i];
+			}
+		}
 		public int getPoints() {
 			return points;
 		}
@@ -180,6 +185,12 @@ public class SOCState {
 		}
 		public void setNumberOfPotentialSettlements(int numberOfPotentialSettlements) {
 			this.numberOfPotentialSettlements = numberOfPotentialSettlements;
+		}
+		public void addPoints(int points) {
+			this.points += points;
+		}
+		public void substractPoints(int points) {
+			this.points -= points;
 		}
 		/**For now length of the array that will be created by the state is calculated by hand.
 		 * TO DO: automate it, so it won't be necessary to update it every time that state will be changing. 
@@ -270,12 +281,12 @@ public class SOCState {
      * (however number of adjacent hexes is taken into account in 
      * {@link #updateBoardInfoOnBuildings(SOCPlayer pn, SOCBoard board)}).
      * <P>
-     * {@link #resourceProbabilities} and {@link #uniqueNumbers} are updated at the same time, because
-     * the same information is accessed for these two.
+     * {@link SOCPlayerState#resourceProbabilities} and {@link SOCPlayerState#uniqueNumbers} are 
+     * updated at the same time, because the same information is accessed for these two.
      * <P>
      * {@link SOCPlayerNumbers} from {@link SOCPlayer#getNumbers()} is used.
      * 
-     * @param pn player for which to update info
+     * @param pn player for whom to update info
      * @param robberHex int value of hex on which robber is placed
      */
     public void updateResourceProbabilitiesAndUniqueNumbers(SOCPlayer pn, int robberHex) {
@@ -324,12 +335,14 @@ public class SOCState {
     
     /**
      * For each resource type number of adjacent settlements and cities (counted twice) is calculated.
+     * Settlements and cities adjacent to the hex blocked by the robber are not taken into account.
      * Also number of unique hexes to which settlements and cities of the player are adjacent is calculated.
+     * (this number includes the hex blocked by the robber, if that's the case)
      * And the information, if player is blocked by robber (robber stands on a hex, that's adjacent to
      * player's settlement or city) is updated
      * {@link #resourceAdjacentBuildings}, {@link #uniqueHexes} and {@link #blockedByRobber} are updated.
      * 
-     * @param pn player for which to update info
+     * @param pn player for whom to update info
      * @param board on which game is played
      */
     public void updateBoardInfoOnBuildings(SOCPlayer pn, SOCBoard board, int robberHex) {
@@ -399,7 +412,7 @@ public class SOCState {
     
     /**
      * For each port type it is marked if player has access to it or not
-     * @param pn player for which to update ports
+     * @param pn player for whom to update ports
      */
     public void updatePorts(SOCPlayer pn){
     	int[] ports = new int[6];
@@ -415,18 +428,32 @@ public class SOCState {
     /**
      * Update what resource cards player has in hand.
      * For other players also type unknown is included
-     * @param pn player for which to update resources
+     * @param pn player for whom to update resources
      * @param otherPlayer if true also unknown resource type is included
      */
     public void updateResources(SOCPlayer pn, boolean otherPlayer) {
     	int[] resources = pn.getResources().getAmounts(otherPlayer);
-    	int[] res = Arrays.copyOf(resources, resources.length);
-    	playersInfo.get(Integer.valueOf(pn.getPlayerNumber())).setResources(res);
+//    	/*DEBUG*/
+//    	System.out.println("resource " + Arrays.toString(resources));  	
+    	playersInfo.get(Integer.valueOf(pn.getPlayerNumber())).setResources(
+    			Arrays.copyOf(resources, resources.length));
+    }
+    
+    /**
+     * Update what resource cards player has in hand, but instead of assigning the array
+     * like in {@link #updateResources(SOCPlayer, otherPlayer)} we copy the values.
+     * For other players also type unknown is included
+     * @param pn player for whom to update resources
+     * @param otherPlayer if true also unknown resource type is included
+     */
+    public void updateResourcesByCopy(SOCPlayer pn, boolean otherPlayer) {
+    	int[] resources = pn.getResources().getAmounts(otherPlayer);    	    	
+    	playersInfo.get(Integer.valueOf(pn.getPlayerNumber())).copyResources(resources);
     }
     
     /**
      * Update number of points that player has
-     * @param pn player for which to update points
+     * @param pn player for whom to update points
      */
     public void updatePoints(SOCPlayer pn) {
     	playersInfo.get(Integer.valueOf(pn.getPlayerNumber())).setPoints(pn.getPublicVP());
@@ -434,7 +461,7 @@ public class SOCState {
     
     /**
      * Update the number of played knights for player
-     * @param pn player for which to update played knights
+     * @param pn player for whom to update played knights
      */
     public void updatePlayedKnights(SOCPlayer pn) {
     	playersInfo.get(Integer.valueOf(pn.getPlayerNumber())).setPlayedKnights(pn.getNumKnights());
@@ -442,7 +469,7 @@ public class SOCState {
     
     /**
      * Update the longest road length
-     * @param pn player for which to update played the longest road length
+     * @param pn player for whom to update played the longest road length
      */
     public void updateLongestRoad(SOCPlayer pn) {
     	pn.calcLongestRoad2();
@@ -451,7 +478,7 @@ public class SOCState {
     
     /**
      * Update if the player has the longest road in the game
-     * @param pn player for which to update 
+     * @param pn player for whom to update 
      */
     public void updateHasLongestRoad(SOCPlayer pn) {
     	int hasLongestRoad = pn.hasLongestRoad() ? 1 : 0;
@@ -460,13 +487,19 @@ public class SOCState {
     
     /**
      * Update if the player has the largest army in the game
-     * @param pn player for which to update 
+     * Uses info from SOCPlayer
+     * @param pn player for whom to update 
      */
     public void updateHasLargestArmy(SOCPlayer pn) {
     	int hasLargestArmy = pn.hasLargestArmy() ? 1 : 0;
     	playersInfo.get(Integer.valueOf(pn.getPlayerNumber())).setHasLargestArmy(hasLargestArmy);
     }
     
+    /**
+     * Update number of places, where we can potentially build a settlement
+     * Uses info from SOCPlayer
+     * @param pn player for whom to update
+     */
     public void updateNumberOfPotentialSettlements(SOCPlayer pn) {
     	int settlements = pn.getPotentialSettlements_arr()==null? 0 : pn.getPotentialSettlements_arr().length;
     	playersInfo.get(Integer.valueOf(pn.getPlayerNumber())).setNumberOfPotentialSettlements(settlements);
@@ -527,6 +560,11 @@ public class SOCState {
 	   updateNumberOfPotentialSettlements(pn);
    }
    
+   /**
+    * After placing the road, information about points, longest road length, player
+    * with the longest road and number of potential settlements should be updated
+    * @param pn - player number for whom the information has to be updated
+    */
    public void updatePlaceRoad(SOCPlayer pn) {
 	   updatePoints(pn);
 	   updateLongestRoad(pn);
@@ -540,22 +578,41 @@ public class SOCState {
 	   updateNumberOfPotentialSettlements(pn);
    }
    
+   /**After placing the robber we have to change the probabilities of obtaining the 
+    * given resource, number of unique numbers (from 2 to 12) that are placed 
+    * on player hexes (through {@link #updateResourceProbabilitiesAndUniqueNumbers}).
+    * We also have to update, if the player is blocked by the robber and number of
+    * buildings of the player adjacent to the given resource (through 
+    * {@link #updateBoardInfoOnBuildings})
+    */
    public void updatePlaceRobber(SOCPlayer pn,  SOCBoard board, int robberHex) {
 	   updateResourceProbabilitiesAndUniqueNumbers(pn, robberHex);
 	   updateBoardInfoOnBuildings(pn, board, robberHex);
    }
    
+   /**
+    * Resources may be stolen in two cases: when robber is moved, then one
+    * resource is stolen and when the monopoly card is played - then all
+    * resources of the given type are stolen.
+    * 
+    * @param pn - player number from whom resources are being stolen.
+    * @param res - resource that will be stolen
+    * @param all - if all resources of given type will be stolen
+    */
    public void updateSteal(SOCPlayer pn, int res, boolean all) {
 	   SOCPlayerState op = playersInfo.get(Integer.valueOf(pn.getPlayerNumber()));
 	   int[] resOp = op.getResources();
 	   SOCPlayerState ourPlayer = playersInfo.get(ourPlayerNumber);
 	   int[] resOur = ourPlayer.getResources();
 	   if (resOp[res] == 0) {
+		   /*if the opponent has no resources of the given type we decrease the resources of the
+		    * unknown type (we check that opponent ha resources of unknown type before calling this function)
+		    */
 		   if(!all) {
 			   resOp[SOCResourceConstants.UNKNOWN-1]--;
-			   op.setResources(resOp);
+			   op.setResources(resOp); //TO TEST: I think this one is not needed, the array is the same thing
 			   resOur[res]++;
-			   ourPlayer.setResources(resOur);
+			   ourPlayer.setResources(resOur); //TO TEST: same as above
 		   }
 	   } else {
 		   
@@ -567,10 +624,135 @@ public class SOCState {
 			   resOp[res]--;
 		   }
 		   
-		   op.setResources(resOp);
-		   ourPlayer.setResources(resOur);
+		   op.setResources(resOp); //TO TEST: same as above
+		   ourPlayer.setResources(resOur); //TO TEST: same as above
 	   }
    }
+   
+   /**
+    * Function used in {@link RLStrategy#searchBuyDevelopmentCard()} to account for changes
+    * that will result after buying a specific type of development card.
+    * After buying a development card we increase the number of cards in our hand.
+    * If VP card was bought we also increase the number of VP points.
+    * @param pn - player number who bought the development card
+    * @param boughtCard - index of the card in devCards
+    */
+   public void updateBuyDevCard(SOCPlayer pn, int boughtCard) {
+	   int[] devCards = playersInfo.get(ourPlayerNumber).getDevCards();
+	   devCards[boughtCard]++;
+	   if (boughtCard == 0) {		   
+		   playersInfo.get(ourPlayerNumber).addPoints(1);
+	   }	    	
+   }
+   
+   /**
+    * Function used in {@link RLStrategy#searchBuyDevelopmentCard()} to reestablish the original
+    * state after it was changed by {@link #updateBuyDevCard(SOCPlayer, boughtCard)}.
+    * To return to previous state we decrease the number of cards in our hand.
+    * If VP card was bought we also decrease the number of VP points.
+    * @param pn - player number who bought the development card
+    * @param boughtCard - index of the card in devCards
+    */
+   public void undoUpdateBuyDevCard(SOCPlayer pn, int boughtCard) {
+	   int[] devCards = playersInfo.get(ourPlayerNumber).getDevCards();
+	   devCards[boughtCard]--;
+	   if (boughtCard == 0) {		   
+		   playersInfo.get(ourPlayerNumber).substractPoints(1);
+	   }	    	
+   }
+   
+   /**
+    * Function used in {@link RLStrategy#searchPlaceRobberOrPlayKnight()} when
+    * knight card was played. Updates development cards
+    * @param pn - player number who played the knight card
+    * @param willGetLA - if pn will get Largest Army award
+    * @param currentPlayerWithLA - (LA -Largest Army award)
+    */
+   public void updatePlayedKnightCard(SOCPlayer pn, boolean willGetLA, SOCPlayer currentPlayerWithLA) {
+	   SOCPlayerState pnState = getPlayerState(pn);
+	   int[] devCards = pnState.getDevCards();
+		//decrease the number of old knight cards in our hand
+		devCards[7]--;
+		pnState.setPlayedKnights(pnState.getPlayedKnights() + 1);
+		/*change the owner of the largest army award if that's a case */
+		if (willGetLA) {
+			pnState.setHasLargestArmy(1);
+			getPlayerState(currentPlayerWithLA).setHasLargestArmy(0);
+		}
+   }
+   
+   /**
+    * Reduces amount of old development cards possessed by our player.
+    * Used for roads, discovery and monopoly card. For Knight card use
+    * {@link #updatePlayedKnightCard(SOCPlayer pn,boolean willGetLA, SOCPlayer currentPlayerWithLA)}
+    * @param cardPlayed - type of development card played as in {@link SOCDevCardConstants}
+    */
+   public void updatePlayedDevCard(int cardPlayed) {
+	   int[] devCards = playersInfo.get(Integer.valueOf(ourPlayerNumber)).getDevCards();
+	   switch(cardPlayed) {
+	   	case SOCDevCardConstants.ROADS:
+	   		devCards[1]--;
+	   		break;
+	   	case SOCDevCardConstants.DISC:
+	   		devCards[3]--;
+	   		break;
+	   	case SOCDevCardConstants.MONO:
+	   		devCards[5]--;
+	   		break;
+		   
+	   }		  
+   }
+   
+   /**
+    * Change amount of resource by given amounts
+    * 
+    * @param resources - index of resources to update starting with 0
+    * @param amounts - positive or negative amounts by which th resource change
+    */
+   public void updateAddSubstractResources(int[] resources, int[] amounts) {
+	   int[] ourResources = playersInfo.get(Integer.valueOf(ourPlayerNumber)).getResources();
+	   for (int i=0; i <resources.length; i++) {
+		   ourResources[resources[i]] += amounts[i];
+	   }
+	   
+   }
+   
+   /**
+    * Used in {@link RLStrategy#searchRollDice()} to add 1 resource for each building
+    * that we would receive with the given roll result
+    * 
+    * @param resources - index of resources to update starting with 1
+    */
+   public void updateAddResourcesFromConstants(Vector<Integer> resources) {
+	   int[] ourResources = playersInfo.get(Integer.valueOf(ourPlayerNumber)).getResources();
+	   for (int res : resources){
+			//numbers.getResourcesForNumber(i, robberHex) returns resources, where CLAY = 1,
+			//so we have to decrease each resource by 1
+			ourResources[res-1]++;
+		}
+   }
+   
+   
+   public void updateSubstractResources(int[] resources, int[] amounts) {
+	   int[] ourResources = playersInfo.get(Integer.valueOf(ourPlayerNumber)).getResources();
+	   for (int i=0; i <resources.length; i++) {
+		   ourResources[resources[i]] -= amounts[i];
+	   }
+	   
+   }
+   
+   /**
+    * used in {@link RLStrategy#searchPlaceRobberOrPlayKnight(SOCState, boolean)} in case
+    * when search is done after 7 was rolled to account for changes in resources done
+    * while discarding
+    * @param pn - player for which to set resources
+    * @param resources - set of resources
+    */
+   public void updateSetResources(SOCPlayer pn, int[] resources) {
+	   playersInfo.get(Integer.valueOf(pn.getPlayerNumber())).setResources(resources);
+   }
+   
+   
    
    public HashMap<Integer, SOCPlayerState> getPlayersInfo() {
 	   return playersInfo;

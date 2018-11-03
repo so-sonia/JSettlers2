@@ -85,7 +85,7 @@ public class OpeningBuildStrategy {
      * @param ga  Our game
      * @param pl  Our player data in <tt>ga</tt>
      */
-    OpeningBuildStrategy(SOCGame ga, SOCPlayer pl)
+    public OpeningBuildStrategy(SOCGame ga, SOCPlayer pl)
     {
         if (pl == null)
             throw new IllegalArgumentException();

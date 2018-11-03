@@ -1,6 +1,7 @@
 package soc.robot.rl;
 
 import java.util.AbstractMap;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -231,7 +232,10 @@ public class RlbotBrain2 extends SOCRobotBrain {
      */
     private int lastStartingRoadTowardsNode;
 
-
+	/**
+	 * Responsible for all logic behind bots moves. Uses Reinforcement learning algorithm to 
+	 * learn which movements bring about the best outcomes and 
+	 */
     protected RLStrategy rlStrategy;
     
     protected int[] moveRobber;
@@ -281,8 +285,12 @@ public class RlbotBrain2 extends SOCRobotBrain {
                         // skip the pings; note (mesType != SOCMessage.TIMINGPING) here.
 
                         mesType = mes.getType();
-                        if (mesType != SOCMessage.TIMINGPING)
-                            turnEventsCurrent.addElement(mes);
+                        if (mesType != SOCMessage.TIMINGPING) {
+                        	 turnEventsCurrent.addElement(mes);
+//                        	 //DEBUG
+//                             List<String> debList = debugPrintBrainStatus();
+//                             System.out.println(Arrays.toString(debList.toArray()));
+                        }
                         if (D.ebugOn)
                             D.ebugPrintln("mes - " + mes);
                     }
@@ -434,6 +442,9 @@ public class RlbotBrain2 extends SOCRobotBrain {
                         failedBuildingAttempts = 0;
                         rejectedPlayDevCardType = -1;
                         rejectedPlayInvItem = null;
+                        
+                        //DEBUG
+                        System.out.println("ITS OUR TURN");
                     }
 
                     /**
@@ -927,6 +938,8 @@ public class RlbotBrain2 extends SOCRobotBrain {
                                             buildingPlan.clear();
                                             negotiator.resetTargetPieces();
                                              */
+                                        //DEBUG
+                                        System.out.println("END TURN");
 
                                         pause(1500);
                                         client.endTurn(game);
@@ -1078,9 +1091,29 @@ public class RlbotBrain2 extends SOCRobotBrain {
                         }
 
                         counter = 0;
-                        client.discard(game, rlStrategy.discard( 
-                        		((SOCDiscardRequest) mes).getNumberOfDiscards()));
-
+                        //TEST
+//                        client.discard(game, rlStrategy.discard( 
+//                        		((SOCDiscardRequest) mes).getNumberOfDiscards()));
+                        
+                        SOCResourceSet discards = new SOCResourceSet();
+                        discards =  rlStrategy.discard(((SOCDiscardRequest) mes).getNumberOfDiscards());
+                        int[] intDiscards = discards.getAmounts(false);
+                        System.out.println("set to discard" + Arrays.toString(intDiscards));                      
+                        
+                        SOCResourceSet discardsn = new SOCResourceSet();
+                        SOCGame.discardOrGainPickRandom(
+                        		ourPlayerData.getResources(), ((SOCDiscardRequest) mes).getNumberOfDiscards(), 
+                        		true, discardsn, rand);
+                        
+                        intDiscards = discardsn.getAmounts(false);
+                        System.out.println("random set to discard" + Arrays.toString(intDiscards));
+                        
+                        client.discard(game, discards);
+                        //ENDTEST
+                        
+                        /*DEBUG*/
+                    	System.out.println("finished discarding");
+                    	
                         //  }
                         break;
 
@@ -3333,7 +3366,7 @@ public class RlbotBrain2 extends SOCRobotBrain {
         negotiator = new SOCRobotNegotiator(this);
         openingBuildStrategy = new OpeningBuildStrategy(game, ourPlayerData);
         monopolyStrategy = new MonopolyStrategy(game, ourPlayerData);
-        rlStrategy = new RLStrategy(this);
+        rlStrategy = new RLStrategyLookupTable(this);
 
       
         // Verify expected face (fast or smart robot)
@@ -3740,8 +3773,11 @@ public class RlbotBrain2 extends SOCRobotBrain {
              get.add(1, tradeOffer[1]+1);
     		
     		client.bankTrade(game, give, get);
+    		counter = 0;
+    		waitingForTradeMsg = true;
             pause(2000);
             break;
+
     		
     	case RLStrategy.PLACE_SETTLEMENT:
     		

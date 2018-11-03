@@ -1131,6 +1131,7 @@ public class SOCRobotBrain extends Thread
                     {
                         mesType = -1;
                     }
+                    
 
                     if (waitingForTradeMsg && (counter > 10))
                     {
@@ -1561,7 +1562,7 @@ public class SOCRobotBrain extends Thread
                             }
                         }
                     }
-
+                    
                     if (ourTurn && (! waitingForOurTurn)
                         && (game.getGameState() == SOCGame.PLACING_INV_ITEM) && (! waitingForGameState))
                     {

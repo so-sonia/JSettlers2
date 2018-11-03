@@ -40,7 +40,6 @@ import soc.game.SOCRoad;
 import soc.game.SOCRoutePiece;
 import soc.game.SOCSettlement;
 import soc.game.SOCShip;
-
 import soc.util.Pair;
 import soc.util.Queue;
 
@@ -4159,5 +4158,6 @@ public class SOCPlayerTracker
         return "SOCPlayerTracker@" + Integer.toHexString(super.hashCode())
             + "[" + brain.getOurPlayerData().getName() + ", pl=" + player.getName() + "]";
     }
+
 
 }

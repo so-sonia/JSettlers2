@@ -301,7 +301,7 @@ public class SOCPlayerNumbers
         return probTotal;
     }
 
-    /**
+	/**
      * Get this player's resources gained when a dice number is rolled.
      *<P>
      * {@link SOCBoardLarge#GOLD_HEX} is handled by adding all resource types

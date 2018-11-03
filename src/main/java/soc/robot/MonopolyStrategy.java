@@ -52,7 +52,7 @@ public class MonopolyStrategy
      * @param ga  Our game
      * @param pl  Our player data in <tt>ga</tt>
      */
-    MonopolyStrategy(SOCGame ga, SOCPlayer pl)
+    public MonopolyStrategy(SOCGame ga, SOCPlayer pl)
     {
         if (pl == null)
             throw new IllegalArgumentException();

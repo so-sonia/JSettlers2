@@ -4874,5 +4874,13 @@ public class SOCPlayer implements SOCDevCardConstants, Serializable, Cloneable
             this.desc = desc;
         }
     }
+    
+    /**
+     * @author Sonia
+     * @return a set of edges where a road could be placed on the next turn
+     */
+    public HashSet<Integer> getPotentialRoads(){
+    	return(potentialRoads);
+    }
 
 }
