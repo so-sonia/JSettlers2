@@ -1,9 +1,21 @@
 package soc.robot.rl;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Random;
+import java.util.stream.Stream;
+
+import com.sun.security.ntlm.Client;
 
 import soc.game.SOCPlayer;
 import soc.robot.SOCRobotBrain;
@@ -24,19 +36,27 @@ public class RLStrategyLookupTable extends RLStrategy{
     /** Memory for all the states type 2 */
     protected HashMap<int[], Double> states2;
 	
-	public RLStrategyLookupTable(SOCRobotBrain br) {
+	public RLStrategyLookupTable(RlbotBrain2 br) {
 		super(br);
 		// TODO Auto-generated constructor stub
 		state = new SOCState(ourPlayerNumber, playerTrackers);
         state.updateAll(playerTrackers, board);   
-        
         
         //TO DO: read these from file - make a function: read memory
         states = new HashMap<int[], Double>();    
         states2 = new HashMap<int[], Double>(); 
         oldState = new HashMap<SOCPlayer, int[]>();
         oldState2 = new int[6];
+        readMemory();
         
+//        int gamesPlayed = br.getClient().getGamesPlayed();
+//        int updateFrequency = br.getClient().getUpdateFrequency();
+//        if ((gamesPlayed % updateFrequency)==0) {
+//        	synchroniseMemory();
+//        } else {
+//        	readMemory();
+//        }
+//       
         ArrayList<CustomPair> opp_states = new ArrayList<CustomPair>();
 
         /* adding to memory the state at the beginning of the game */
@@ -66,7 +86,7 @@ public class RLStrategyLookupTable extends RLStrategy{
 		
 	}
 	
-	
+
 	protected float getStateValue(SOCState tmpState) {
     	ArrayList<CustomPair> opp_states = new ArrayList<CustomPair>();
 
@@ -160,5 +180,121 @@ public class RLStrategyLookupTable extends RLStrategy{
 	    	oldState2 = newState;	    	
 	    	currentStateValue = newStateValue;
 	    }
+	 
+	 protected void readMemory() {
+		 String nickname = brain.getClient().getNickname();
+		 
+		 System.out.println("reading memory");
+		 
+		 HashMap<int[], Double> map = null;
+		 
+		 try (DirectoryStream<Path> dirStream = Files.newDirectoryStream(
+		            Paths.get("memory"),  "RL_LT_" + nickname + "_states_*")) {
+			 
+			 for (Path dir : dirStream) {
+				 map = readPath(dir);
+				 map.forEach(
+						    (key, value) -> states.merge(key, value, (v1, v2) -> new Double((v1+v2)/2))
+						);
+				 dir.toFile().delete();
+			 }
+			 
+			 /*DEBUG*/
+	         System.out.println(states.size() + " states read");
+			 
+	      }catch(IOException ioe)
+	      {
+	         ioe.printStackTrace();
+	         return;
+	      }
+		 
+		 try (DirectoryStream<Path> dirStream = Files.newDirectoryStream(
+		            Paths.get("memory"),  "RL_LT_" + nickname + "_states2_*")) {
+			 
+			 for (Path dir : dirStream) {
+				 map = readPath(dir);
+				 map.forEach(
+						    (key, value) -> states2.merge(key, value, (v1, v2) -> new Double((v1+v2)/2))
+						);
+				 dir.toFile().delete();
+			 }
+			 
+			 /*DEBUG*/
+	         System.out.println(states2.size() + " states2 read");
+			 
+	      }catch(IOException ioe)
+	      {
+	         ioe.printStackTrace();
+	         return;
+	      }
+		 
+		 writeMemory();
+		
+	 }
+	 
+	 protected void synchroniseMemory() {
+		 
+	 }
+	 
+	 protected void writeMemory() {
+
+		 String nickname = brain.getClient().getNickname();
+		 Path path = Paths.get("memory", "RL_LT_" + nickname + "_states_" + game.getName()); 
+		 writePath(path, states);
+		 /*DEBUG*/
+         System.out.println("Serialized HashMap states data is saved in " + path.toString());
+         System.out.println(states.size() + " states saved");
+         
+         path = Paths.get("memory", "RL_LT_" + nickname + "_states2_" + game.getName()); 
+         writePath(path, states2);
+         /*DEBUG*/
+         System.out.println("Serialized HashMap states2 data is saved in " + path.toString());
+         System.out.println(states2.size() + " states2 saved");
+
+	 }
+	 
+	 protected void writeStats() {
+
+	 }
+	 
+	 protected HashMap<int[], Double> readPath(Path path){
+		 HashMap<int[], Double> map = null;
+		 try
+	     {
+	    	 FileInputStream fis = new FileInputStream(path.toFile());
+	         ObjectInputStream ois = new ObjectInputStream(fis);
+	         map = (HashMap<int[], Double>) ois.readObject();
+	         ois.close();
+	         fis.close();
+	      }catch(IOException ioe)
+	      {
+	         ioe.printStackTrace();
+	         return null;
+	      }catch(ClassNotFoundException c)
+	      {
+	         System.out.println("Class not found");
+	         c.printStackTrace();
+	         return null;
+	      }
+		 return map;
+	 }
+	 
+	 
+	 
+	 protected void writePath(Path path, HashMap<int[], Double> target){
+		 try
+         {
+			 FileOutputStream fos =
+                   new FileOutputStream(path.toFile());
+                ObjectOutputStream oos = new ObjectOutputStream(fos);
+                oos.writeObject(target);
+                oos.close();
+                fos.close();
+                                
+         }catch(IOException ioe)
+          {
+                ioe.printStackTrace();
+          }
+	 }
 
 }

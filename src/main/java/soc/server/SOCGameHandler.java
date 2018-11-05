@@ -127,7 +127,7 @@ public class SOCGameHandler extends GameHandler
      * @see SOCServer#checkForExpiredTurns(long)
      * @since 1.1.11
      */
-    public static int ROBOT_FORCE_ENDTURN_TRADEOFFER_SECONDS = 60;
+    public static int ROBOT_FORCE_ENDTURN_TRADEOFFER_SECONDS = 10;
 
     /**
      * Used by {@link #SOC_DEBUG_COMMANDS_HELP}, etc.

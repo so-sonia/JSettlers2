@@ -6,7 +6,7 @@
  * does not change even if the new road is tryPuPiece places) or changes info for the given player?
  * we need this because in searchPlayRoads() and then in SOCState.updateNumberOfPotentialSettlements()
  * we just use info from SOCPlayer
- * TO DO: all the actions, that change data of SOCStatePlayer should be changed in SOCstate
+ * [done] TO DO: all the actions, that change data of SOCStatePlayer should be changed in SOCstate
  * not in RLStrategy
  * TO DO: there's a problem with searchPlayRoads() gives exception but doesn't block
  * [done] TO DO: discarding 5 cards instead of 4, maybe there's the mistake 
@@ -66,7 +66,7 @@ public abstract class RLStrategy {
 	 /** Our game */
     protected final SOCGame game;
     
-    protected SOCRobotBrain brain;
+    protected RlbotBrain2 brain;
     protected HashMap<Integer,SOCPlayerTracker> playerTrackers;
     protected SOCPlayerTracker ourPlayerTracker;
     protected final SOCPlayer ourPlayerData;
@@ -94,7 +94,7 @@ public abstract class RLStrategy {
      * Create an RLStrategy for a {@link SOCRobotBrain}'s player.
      * @param br robot's brain
      */
-    public RLStrategy(SOCRobotBrain br)
+    public RLStrategy(RlbotBrain2 br)
     {
     	brain = br;
     	playerTrackers = brain.getPlayerTrackers();
@@ -1182,6 +1182,12 @@ public abstract class RLStrategy {
     }
     
     protected abstract void updateStateValue();
+    
+    protected abstract void writeMemory();
+    
+    protected abstract void readMemory();
+    
+    protected abstract void synchroniseMemory();
 
     
     protected class CustomPair {

@@ -546,7 +546,7 @@ public class SOCServer extends Server
      * @see #checkForExpiredTurns(long)
      * @since 1.1.11
      */
-    public static int ROBOT_FORCE_ENDTURN_SECONDS = 150;
+    public static int ROBOT_FORCE_ENDTURN_SECONDS = 12;
         // If this value is changed, also update the jsettlers.bots.timeout.turn
         // comments in /src/main/bin/jsserver.properties.sample.
 

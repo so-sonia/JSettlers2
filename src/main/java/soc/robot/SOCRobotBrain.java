@@ -77,7 +77,12 @@ import soc.util.DebugRecorder;
 import soc.util.Queue;
 import soc.util.SOCRobotParameters;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -2039,6 +2044,8 @@ public class SOCRobotBrain extends Thread
         }
 
         //D.ebugPrintln("STOPPING AND DEALLOCATING");
+        writeStats();
+        
         gameEventQ = null;
 
         client.addCleanKill();
@@ -5280,5 +5287,56 @@ public class SOCRobotBrain extends Thread
                 D.ebugPrintln(resourceMessage);
             }
         }
+    }
+    
+    protected void writeStats() {
+		BufferedWriter writer = null;
+        try {
+        	Path path = Paths.get("log", "RL_RND_stat.txt");
+            writer = new BufferedWriter(new FileWriter(path.toFile(), true));
+            
+            String res = Arrays.toString(ourPlayerData.getResourceRollStats())
+            		.replace("[", "").replace("]", "");
+            int[] ports = new int[6];
+        	boolean[] portFlags = ourPlayerData.getPortFlags();
+        	
+        	for (int i=0; i < ports.length; i++) {
+        		ports[i] = portFlags[i] ? 1 : 0 ;
+        	}
+            String portsString = Arrays.toString(ports)
+            		.replace("[", "").replace("]", "");
+            
+            writer.write(game.getName() + ", " 
+        			+ ourPlayerData.getPlayerNumber() + ", " 
+        			+ ourPlayerData.getName() + ", "
+        			+ getRobotParameters().getStrategyType() + ", "
+        			+ ourPlayerData.getTotalVP() + ", "
+        			+ ourPlayerData.hasLargestArmy() + ", "
+        			+ ourPlayerData.getNumKnights() + ", "
+        			+ ourPlayerData.hasLongestRoad() + ", "
+        			+ ourPlayerData.getInventory().getNumVPItems() + ", "
+        			+ ourPlayerData.getSettlements().size() + ", "
+        			+ ourPlayerData.getCities().size() + ", "
+        			+ ourPlayerData.getRoadsAndShips().size() + ", "
+        			+ portsString   
+        			);
+            writer.newLine();
+                       
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                // Close the writer regardless of what happens...
+                writer.close();
+            } catch (Exception e) {
+            }
+        }
+//        liczba zdobytych punktów z podziałem na sposób uzyskania (osada, miasto, karta, LR, LA)
+//		game.getPlayer(player number), game.getName() for game name (or make ID for it),
+//		 * 		player.getName() for player name, 
+//		 * 		SOCRobotBrain.getRobotParameters().getStrategyType() (0 = SMART_STRATEGY, 1 = FAST_STRATEGY)
+//		 * 		in each robot client we will have: gamesPlayed, gamesFinished = 0, gamesWon
+//		 * 		from robot client we can get brain by SOCRobotBrain brain = robotBrains.get(mes.getGame());
+	
     }
 }

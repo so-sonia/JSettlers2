@@ -136,7 +136,7 @@ import soc.util.SOCRobotParameters;
  * For a trivial example see {@link soc.robot.sample3p.Sample3PBrain}.
  * See {@code README.developer} for more about bot development.
  *
- * @author Sonia Przygocka
+ * @author Sonia Przygocka (extended)
  */
 
 public class RlbotBrain2 extends SOCRobotBrain {
@@ -232,6 +232,7 @@ public class RlbotBrain2 extends SOCRobotBrain {
      */
     private int lastStartingRoadTowardsNode;
 
+    
 	/**
 	 * Responsible for all logic behind bots moves. Uses Reinforcement learning algorithm to 
 	 * learn which movements bring about the best outcomes and 
@@ -241,10 +242,21 @@ public class RlbotBrain2 extends SOCRobotBrain {
     protected int[] moveRobber;
     
     protected int monopolyChoice;
+    
+    protected RlbotClient client;
+    
+    /**
+     * @return the player client
+     */
+    public RlbotClient getClient()
+    {
+        return client;
+    }
 
 
-	public RlbotBrain2(SOCRobotClient rc, SOCRobotParameters params, SOCGame ga, CappedQueue<SOCMessage> mq) {
+	public RlbotBrain2(RlbotClient rc, SOCRobotParameters params, SOCGame ga, CappedQueue<SOCMessage> mq) {
 		super(rc, params, ga, mq);
+		client = rc;
 		robotParameters = params.copyIfOptionChanged(ga.getGameOptions());
 		waitingForSpecialBuild = false;
         decidedIfSpecialBuild = false;
@@ -1231,6 +1243,9 @@ public class RlbotBrain2 extends SOCRobotBrain {
         }
 
         //D.ebugPrintln("STOPPING AND DEALLOCATING");
+        writeStats();
+        rlStrategy.writeMemory();
+        
         gameEventQ = null;
 
         client.addCleanKill();
@@ -3366,7 +3381,7 @@ public class RlbotBrain2 extends SOCRobotBrain {
         negotiator = new SOCRobotNegotiator(this);
         openingBuildStrategy = new OpeningBuildStrategy(game, ourPlayerData);
         monopolyStrategy = new MonopolyStrategy(game, ourPlayerData);
-        rlStrategy = new RLStrategyLookupTable(this);
+        rlStrategy = new RLStrategyRandom(this);
 
       
         // Verify expected face (fast or smart robot)
