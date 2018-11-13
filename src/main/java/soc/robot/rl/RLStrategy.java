@@ -106,8 +106,8 @@ public abstract class RLStrategy {
         alpha = 0.6;
         gamma = 1.0;
         
-        System.out.println("alpha " + alpha + " gamma " + gamma);   
-        
+        System.out.println("alpha " + alpha + " gamma " + gamma); 
+          
         state = new SOCState(ourPlayerNumber, playerTrackers);
         state.updateAll(playerTrackers, board);   
         
@@ -125,12 +125,9 @@ public abstract class RLStrategy {
         currentStateValue = new Double(0.0);
     }
     
-    public void getAction(){
-    	/*
-    	 * preparing information about our player to put into the lookup table
-    	 */
-
-
+    public void updateStateAfterAddingPlayer(){
+    	state = new SOCState(ourPlayerNumber, playerTrackers);
+        state.updateAll(playerTrackers, board);   
     }
     
     /**
@@ -149,14 +146,14 @@ public abstract class RLStrategy {
      * (This should be checked in {@link #buildOrTradeOrPlayCard() })
      */
     protected AbstractMap.SimpleEntry<Float, Integer> searchPlaceSettlement() {
-    	/*DEBUG*/
-    	System.out.println("searchPlaceSettlement() was called");
+//    	/*DEBUG*/
+//    	System.out.println("searchPlaceSettlement() was called");
     	
     	int[] potentialSettlements = ourPlayerData.getPotentialSettlements_arr();
     	
-    	/*DEBUG*/
-    	System.out.println("there are: " + potentialSettlements.length + ""
-    			+ " potential settlements to be searched");
+//    	/*DEBUG*/
+//    	System.out.println("there are: " + potentialSettlements.length + ""
+//    			+ " potential settlements to be searched");
     	
     	SOCState tmpState = state.copySOCState();    	
     	ArrayList<Float> state_values = new ArrayList<Float>(potentialSettlements.length);
@@ -213,14 +210,14 @@ public abstract class RLStrategy {
      * This should be checked in {@link #buildOrTradeOrPlayCard() }
      */
     protected AbstractMap.SimpleEntry<Float, Integer> searchPlaceRoad() {
-    	/*DEBUG*/
-    	System.out.println("searchPlaceRoad() was called");
+//    	/*DEBUG*/
+//    	System.out.println("searchPlaceRoad() was called");
     	
     	HashSet<Integer> potentialRoads = new HashSet<Integer>(ourPlayerData.getPotentialRoads());
     	
-    	/*DEBUG*/
-    	System.out.println("there are: " + potentialRoads.size() + ""
-    			+ " potential roads to be searched");
+//    	/*DEBUG*/
+//    	System.out.println("there are: " + potentialRoads.size() + ""
+//    			+ " potential roads to be searched");
     	
     	SOCState tmpState = state.copySOCState();
     	ArrayList<Float> state_values = new ArrayList<Float>(potentialRoads.size());
@@ -281,15 +278,15 @@ public abstract class RLStrategy {
      * This should be checked in {@link #buildOrTradeOrPlayCard() }
      */
     protected AbstractMap.SimpleEntry<Float, Integer> searchPlaceCity() {
-    	/*DEBUG*/
-    	System.out.println("searchPlaceCity() was called");
+//    	/*DEBUG*/
+//    	System.out.println(game.getName() + " searchPlaceCity() was called");
    
     	Vector<SOCSettlement> potentialCities = new 
     			Vector<SOCSettlement>(ourPlayerData.getSettlements());
     	
-    	/*DEBUG*/
-    	System.out.println("there are: " + potentialCities.size() + ""
-    			+ " potential cities to be searched");
+//    	/*DEBUG*/
+//    	System.out.println(game.getName() + " there are: " + potentialCities.size() + ""
+//    			+ " potential cities to be searched");
     	
     	SOCState tmpState = state.copySOCState();
     	ArrayList<Float> state_values = new ArrayList<Float>(potentialCities.size());
@@ -322,11 +319,19 @@ public abstract class RLStrategy {
 		    state_values.add(Float.valueOf(getStateValue(tmpState)));
 		    cityCoord.add(Integer.valueOf(posCity.getCoordinates()));
 		    
+//		    /*DEBUG*/
+//		    System.out.println(game.getName() + " items in state_values: " + state_values.size() + ". items in cityCoord " + cityCoord.size());
+		    
 		    SOCPlayerTracker.undoTryPutPiece(tmpCity, game);		    
     	}
     	
     	/*select the place to build the city with the highest state value */
     	AbstractMap.SimpleEntry<Float, Integer> maxAndIndex = getMaxAndIndex(state_values);
+    	
+//    	/*DEBUG*/
+//	    System.out.println(game.getName() + " maxAndIndex key " + maxAndIndex.getKey() + " maxAndIndex value " + 
+//	    		maxAndIndex.getValue() + " cityCoord size " + cityCoord.size());
+	   
     	Integer cityToBuild = cityCoord.get(maxAndIndex.getValue());
     	AbstractMap.SimpleEntry<Float, Integer> result = new AbstractMap.SimpleEntry<Float, Integer>(
     			maxAndIndex.getKey(), cityToBuild);
@@ -361,8 +366,8 @@ public abstract class RLStrategy {
     protected AbstractMap.SimpleEntry<Float, int[]> 
     searchPlaceRobberOrPlayKnight(SOCState currentState, boolean playKnight) {
     	
-    	/*DEBUG*/
-    	System.out.println("searchPlaceRobberOrPlayKnight() was called");
+//    	/*DEBUG*/
+//    	System.out.println("searchPlaceRobberOrPlayKnight() was called");
     	
     	int[] landHexes = board.getLandHexCoords();
 //    	SOCState tmpState = state.copySOCState();
@@ -390,8 +395,8 @@ public abstract class RLStrategy {
         	}
         	
         	
-        	/*DEBUG*/
-        	System.out.println("Will get largest army: " + willGetLA);	
+//        	/*DEBUG*/
+//        	System.out.println("Will get largest army: " + willGetLA);	
     	}
     	    	
     	/*go through all land hexes except the desert and the current robber position
@@ -501,8 +506,8 @@ public abstract class RLStrategy {
      */
     protected float searchBuyDevelopmentCard(){
     	
-    	/*DEBUG*/
-    	System.out.println("searchBuyDevelopmentCard() was called");
+//    	/*DEBUG*/
+//    	System.out.println("searchBuyDevelopmentCard() was called");
     	
     	float state_value = 0.0f;
     	
@@ -546,8 +551,8 @@ public abstract class RLStrategy {
      */
     protected AbstractMap.SimpleEntry<Float, int[]> searchPlayDiscovery() {
     	
-    	/*DEBUG*/
-    	System.out.println("searchPlayDiscovery() was called");
+//    	/*DEBUG*/
+//    	System.out.println("searchPlayDiscovery() was called");
     	
     	SOCState tmpState = state.copySOCState();
     	tmpState.updatePlayedDevCard(SOCDevCardConstants.DISC);
@@ -590,8 +595,8 @@ public abstract class RLStrategy {
      * is the index of resource that we should pick.
      */
     protected AbstractMap.SimpleEntry<Float, Integer> searchPlayMonopoly() {
-    	/*DEBUG*/
-    	System.out.println("searchPlayMonopoly() was called");
+//    	/*DEBUG*/
+//    	System.out.println("searchPlayMonopoly() was called");
     	
     	SOCState tmpState = state.copySOCState();
     	tmpState.updatePlayedDevCard(SOCDevCardConstants.MONO);
@@ -625,14 +630,14 @@ public abstract class RLStrategy {
      */
     protected AbstractMap.SimpleEntry<Float, Integer[]> searchPlayRoads() {
     	
-    	/*DEBUG*/
-    	System.out.println("searchPlayRoads() was called");
+//    	/*DEBUG*/
+//    	System.out.println("searchPlayRoads() was called");
     	
-    	HashSet<Integer> potentialRoads = ourPlayerData.getPotentialRoads();
+    	HashSet<Integer> potentialRoads = (HashSet<Integer>) ourPlayerData.getPotentialRoads().clone();
     	
-    	/*DEBUG*/
-    	System.out.println("In the first run we can check " + potentialRoads.size() +
-    			" of potential roads");
+//    	/*DEBUG*/
+//    	System.out.println("In the first run we can check " + potentialRoads.size() +
+//    			" of potential roads");
     	
     	SOCState tmpState = state.copySOCState();
     	ArrayList<Float> state_values = new ArrayList<Float>();
@@ -643,6 +648,9 @@ public abstract class RLStrategy {
     	/* for checking the situation after placing the road we use the method built into
 		 * SOCPlayerTracker: SOCPlayerTracker.tryPutPiece */
     	for(Integer posSetCoord : potentialRoads) {
+//    		/*DEBUG*/
+//    		System.out.println("road1 number " + posSetCoord);
+    		
     		SOCRoad tmpRoad = new SOCRoad(ourPlayerData, posSetCoord, board);
     		HashMap<Integer, SOCPlayerTracker> trackersCopy = 
     				SOCPlayerTracker.tryPutPiece(tmpRoad, game, playerTrackers);
@@ -661,14 +669,17 @@ public abstract class RLStrategy {
 		    }
 		    
 		    /*potential roads after placing the first road*/
-		    HashSet<Integer> potentialSecondRoads = ourPn.getPotentialRoads();
-		    /*DEBUG*/
-	    	System.out.println("In the second run we can check " +  potentialSecondRoads.size() +
-	    			" of potential roads");
+		    HashSet<Integer> potentialSecondRoads = (HashSet<Integer>) ourPn.getPotentialRoads().clone();
+		    
+//		    /*DEBUG*/
+//	    	System.out.println("In the second run we can check " +  potentialSecondRoads.size() +
+//	    			" of potential roads");
 
 	    	for(Integer posSecondSetCoord : potentialSecondRoads) {
+//	    		/*DEBUG*/
+//	    		System.out.println("road2 number " + posSecondSetCoord);
 	    		
-	    		SOCRoad tmpSecondRoad = new SOCRoad(ourPlayerData, posSecondSetCoord, board);
+	    		SOCRoad tmpSecondRoad = new SOCRoad(ourPn, posSecondSetCoord, board);
 	    		HashMap<Integer, SOCPlayerTracker> trackersSecondCopy = 
 	    				SOCPlayerTracker.tryPutPiece(tmpSecondRoad, game, trackersCopy);
 	    		    		
@@ -712,8 +723,8 @@ public abstract class RLStrategy {
      */
     protected AbstractMap.SimpleEntry<Float, int[]> searchTradeBank() {
     	
-    	/*DEBUG*/
-    	System.out.println("searchTradeBank() was called");
+//    	/*DEBUG*/
+//    	System.out.println("searchTradeBank() was called");
     	
     	SOCState tmpState = state.copySOCState();
     	ArrayList<Float> state_values = new ArrayList<Float>();
@@ -723,10 +734,10 @@ public abstract class RLStrategy {
     	int[] plRes = tmpState.getPlayerState(ourPlayerData).getResources();
     	int[] plResources = Arrays.copyOf(plRes, plRes.length);
     	
-    	/*DEBUG*/
-    	System.out.println("resource " + Arrays.toString(plResources) + 
-    			" resource in tmpstate " + Arrays.toString(tmpState.getPlayerState(ourPlayerData).getResources()));
-    	
+//    	/*DEBUG*/
+//    	System.out.println("resource " + Arrays.toString(plResources) + 
+//    			" resource in tmpstate " + Arrays.toString(tmpState.getPlayerState(ourPlayerData).getResources()));
+//    	
     	//usually to trade with bank we have to give 4 resources of the same type
     	int howMuchToGive = 4;
     	//if we have MISC port we have to give only 3 resources
@@ -750,9 +761,9 @@ public abstract class RLStrategy {
     		
     		if (res>=4 || (res>=3 && ports[SOCBoard.MISC_PORT]==1)|| (res>=2 && ports[j+1]==1) ) {
     			
-    			/*DEBUG*/
-    	    	System.out.println("We can trade " + SOCResourceConstants.resName(j+1) +
-    	    			" because we have " + res + " cards of this type");
+//    			/*DEBUG*/
+//    	    	System.out.println("We can trade " + SOCResourceConstants.resName(j+1) +
+//    	    			" because we have " + res + " cards of this type");
     			
     			int quantity = howMuchToGive;
     			if (ports[j+1]==1) {
@@ -788,10 +799,10 @@ public abstract class RLStrategy {
     	AbstractMap.SimpleEntry<Float, Integer> maxAndIndex = getMaxAndIndex(state_values);
     	int[] trade = tradeOffer.get(maxAndIndex.getValue());
     	
-    	/*DEBUG*/
-    	System.out.println("We decide to trade " + trade[2] + " " + 
-    			SOCResourceConstants.resName(trade[0]+1) +
-    			" for " + SOCResourceConstants.resName(trade[1]+1));
+//    	/*DEBUG*/
+//    	System.out.println("We decide to trade " + trade[2] + " " + 
+//    			SOCResourceConstants.resName(trade[0]+1) +
+//    			" for " + SOCResourceConstants.resName(trade[1]+1));
     	
     	AbstractMap.SimpleEntry<Float, int[]> result = new AbstractMap.SimpleEntry<Float, int[]>(
     			maxAndIndex.getKey(), trade);
@@ -811,8 +822,8 @@ public abstract class RLStrategy {
      */
     protected AbstractMap.SimpleEntry<Float, int[]> searchDiscardAfterSevenRolled(int numDiscards) {
     	
-    	/*DEBUG*/
-    	System.out.println("searchDiscardAfterSevenRolled() was called");
+//    	/*DEBUG*/
+//    	System.out.println("searchDiscardAfterSevenRolled() was called");
     	
     	SOCState tmpState = state.copySOCState();
     	ArrayList<Float> state_values = new ArrayList<Float>();
@@ -827,18 +838,18 @@ public abstract class RLStrategy {
     	kLengthCombination combinationsFinder = new kLengthCombination(plResources, numDiscards);
     	allCardsDiscard = combinationsFinder.getCombinations();
     	
-    	/*DEBUG*/
-    	System.out.println("There are " + allCardsDiscard.size() + 
-    			" combinations of cards we can discard");
-    	/*DEBUG*/
-    	int combindex = 0;
+//    	/*DEBUG*/
+//    	System.out.println("There are " + allCardsDiscard.size() + 
+//    			" combinations of cards we can discard");
+//    	/*DEBUG*/
+//    	int combindex = 0;
     	
     	for(int[] cards : allCardsDiscard) {
     		
-    		/*DEBUG*/
-        	combindex += 1;
-        	System.out.println("Checking combination " + combindex + ". " +
-        			Arrays.toString(cards));
+//    		/*DEBUG*/
+//        	combindex += 1;
+//        	System.out.println("Checking combination " + combindex + ". " +
+//        			Arrays.toString(cards));
 
     		tmpState.updateResources(ourPlayerData, false);
 			tmpState.updateSubstractResources(res, cards);
@@ -852,10 +863,10 @@ public abstract class RLStrategy {
     	AbstractMap.SimpleEntry<Float, int[]> result = new AbstractMap.SimpleEntry<Float, int[]>(
     			maxAndIndex.getKey(), resourceToDiscard);
     	
-    	/*DEBUG*/
-    	System.out.println("Finished discarding");
-    	System.out.println("Resources" + ourPlayerData.getResources().toFriendlyString());
-    	System.out.println("resources to dicard " + Arrays.toString(resourceToDiscard));
+//    	/*DEBUG*/
+//    	System.out.println("Finished discarding");
+//    	System.out.println("Resources" + ourPlayerData.getResources().toFriendlyString());
+//    	System.out.println("resources to dicard " + Arrays.toString(resourceToDiscard));
     	
     	return result;  	
     }
@@ -868,8 +879,8 @@ public abstract class RLStrategy {
      */
     protected float searchRollDice() {
     	
-    	/*DEBUG*/
-    	System.out.println("searchRollDice() was called");
+//    	/*DEBUG*/
+//    	System.out.println("searchRollDice() was called");
     	
     	SOCState tmpState = state.copySOCState();
     	float state_value = 0.0f;
@@ -952,8 +963,8 @@ public abstract class RLStrategy {
      */
     public AbstractMap.SimpleEntry<Integer, int[]> rollOrPlayKnight() {
 
-    	/*DEBUG*/
-    	System.out.println("rollOrPlayKnight() was called");
+//    	/*DEBUG*/
+//    	System.out.println("rollOrPlayKnight() was called");
     	
     	updateStateValue();
     	
@@ -962,25 +973,27 @@ public abstract class RLStrategy {
     		AbstractMap.SimpleEntry<Float, int[]> playKnight = searchPlaceRobberOrPlayKnight(state, true);
         	float roll = searchRollDice();
         	
-        	/*DEBUG*/
-        	System.out.println("roll value " + roll + "play knight value " + playKnight.getKey());
-        	
+//        	/*DEBUG*/
+//        	System.out.println("roll value " + roll + "play knight value " + playKnight.getKey());
+//        	
         	if (roll<playKnight.getKey()) {
-        		/*DEBUG*/
-            	System.out.println("decided to play knight");
+//        		/*DEBUG*/
+//            	System.out.println("decided to play knight");
+        		
         		return(new AbstractMap.SimpleEntry<Integer, int[]>(PLAY_KNIGHT, playKnight.getValue()));
         	} 
     	}
     	
-    	/*DEBUG*/
-    	System.out.println("decided to roll");
+//    	/*DEBUG*/
+//    	System.out.println("decided to roll");
+    	
     	return(new AbstractMap.SimpleEntry<Integer, int[]>(ROLL, null));  	
     }
     
     public int[] moveRobber() {
     	
-    	/*DEBUG*/
-    	System.out.println("moveRobber() was called");
+//    	/*DEBUG*/
+//    	System.out.println("moveRobber() was called");
     	
     	updateStateValue();
     	
@@ -989,24 +1002,26 @@ public abstract class RLStrategy {
     
     public SOCResourceSet discard(int numDiscards) {
     	
-    	/*DEBUG*/
-    	System.out.println("discard() was called. we have to discard " + numDiscards + " cards");
+//    	/*DEBUG*/
+//    	System.out.println("discard() was called. we have to discard " + numDiscards + " cards");
     	
     	updateStateValue();
     	
     	SOCResourceSet resSet = new SOCResourceSet(searchDiscardAfterSevenRolled(numDiscards).getValue());
     	
-    	/*DEBUG*/
-    	System.out.println("resSet send to discard");
+//    	/*DEBUG*/
+//    	System.out.println("resSet send to discard");
     	
     	return resSet;
     }
     
     public AbstractMap.SimpleEntry<Integer, int[]> buildOrTradeOrPlayCard() {
     	
-    	/*DEBUG*/
-    	System.out.println("buildOrTradeOrPlayCard() was called");
+//    	/*DEBUG*/
+//    	System.out.println("buildOrTradeOrPlayCard() was called");
     	
+
+		
     	updateStateValue();
     	
     	ArrayList<Float> actionValues = new ArrayList<Float>();
@@ -1022,16 +1037,16 @@ public abstract class RLStrategy {
     	
     	if (! ourPlayerData.hasPlayedDevCard()) {
     		if (ourPlayerData.getInventory().hasPlayable(SOCDevCardConstants.DISC)) {
-    			/*DEBUG*/
-    			System.out.println("search discovery");
+//    			/*DEBUG*/
+//    			System.out.println("search discovery");
     			discovery = searchPlayDiscovery();
     			actionValues.add(discovery.getKey());
     			actionNames.add(PLAY_DISC);
     		}
     		
     		if (ourPlayerData.getInventory().hasPlayable(SOCDevCardConstants.MONO)) {
-    			/*DEBUG*/
-    			System.out.println("search monopoly");
+//    			/*DEBUG*/
+//    			System.out.println("search monopoly");
     			monopoly = searchPlayMonopoly();
     			actionValues.add(monopoly.getKey());
     			actionNames.add(PLAY_MONO);
@@ -1039,24 +1054,24 @@ public abstract class RLStrategy {
     		
     		if ( (ourPlayerData.getNumPieces(SOCPlayingPiece.ROAD) >= 2) 
     				&& ourPlayerData.getInventory().hasPlayable(SOCDevCardConstants.ROADS)) {
-    			/*DEBUG*/
-    			System.out.println("search roads card");
+//    			/*DEBUG*/
+//    			System.out.println("search roads card");
     			roads = searchPlayRoads();
     			actionValues.add(roads.getKey());
     			actionNames.add(PLAY_ROADS);
     		}
     		
     		if (ourPlayerData.getInventory().hasPlayable(SOCDevCardConstants.KNIGHT)) {
-    			/*DEBUG*/
-    			System.out.println("search play knight");
+//    			/*DEBUG*/
+//    			System.out.println("search play knight");
     			knight = searchPlaceRobberOrPlayKnight(state, true);
     			actionValues.add(knight.getKey());
     			actionNames.add(PLAY_KNIGHT);
     		}    		
     	}
     	
-    	/*DEBUG*/
-    	System.out.println("resources " + ourPlayerData.getResources().toFriendlyString());
+//    	/*DEBUG*/
+//    	System.out.println("resources " + ourPlayerData.getResources().toFriendlyString());
     	
     	//TO DO: get resources into a variable, because it's used several times
     	
@@ -1064,8 +1079,8 @@ public abstract class RLStrategy {
     			SOCPlayingPiece.getResourcesToBuild(SOCPlayingPiece.SETTLEMENT)) 
     			&& ourPlayerData.hasPotentialSettlement()
     			&& (ourPlayerData.getNumPieces(SOCPlayingPiece.SETTLEMENT) > 0)) { 
-    		/*DEBUG*/
-    		System.out.println("search settlement");
+//    		/*DEBUG*/
+//    		System.out.println("search settlement");
     		settlement = searchPlaceSettlement();
 			actionValues.add(settlement.getKey());
 			actionNames.add(PLACE_SETTLEMENT);    		
@@ -1075,8 +1090,8 @@ public abstract class RLStrategy {
     			SOCPlayingPiece.getResourcesToBuild(SOCPlayingPiece.ROAD))
     			&& ourPlayerData.hasPotentialRoad() 
     			&& (ourPlayerData.getNumPieces(SOCPlayingPiece.ROAD) > 0)) {
-    		/*DEBUG*/
-    		System.out.println("search road");
+//    		/*DEBUG*/
+//    		System.out.println("search road");
     		road = searchPlaceRoad();
 			actionValues.add(road.getKey());
 			actionNames.add(PLACE_ROAD);    		
@@ -1086,8 +1101,12 @@ public abstract class RLStrategy {
     			SOCPlayingPiece.getResourcesToBuild(SOCPlayingPiece.CITY))
     			&& ourPlayerData.hasPotentialCity()
     			&& (ourPlayerData.getNumPieces(SOCPlayingPiece.CITY) > 0)) {
-    		/*DEBUG*/
-    		System.out.println("search city");
+//    		/*DEBUG*/
+//    		System.out.println(game.getName() + " search city");
+//    		System.out.println(game.getName() + " has potential city " + ourPlayerData.hasPotentialCity());
+//    		System.out.println(game.getName() + " has settlements " + ourPlayerData.getSettlements().size());
+//    		System.out.println(game.getName() + " has city pieces " + ourPlayerData.getNumPieces(SOCPlayingPiece.CITY));
+        	
     		city = searchPlaceCity();
 			actionValues.add(city.getKey());
 			actionNames.add(PLACE_CITY);    		
@@ -1096,15 +1115,15 @@ public abstract class RLStrategy {
     	//SOCPlayingPiece.MAXPLUSONE is used to get cost of the devcard
     	if (ourPlayerData.getResources().contains(
     			SOCPlayingPiece.getResourcesToBuild(SOCPlayingPiece.MAXPLUSONE))) {
-    		/*DEBUG*/
-    		System.out.println("search development card");
+//    		/*DEBUG*/
+//    		System.out.println("search development card");
     		devCard = searchBuyDevelopmentCard();
 			actionValues.add(devCard);
 			actionNames.add(BUY_DEVCARD);    		
     	}
     	
-		/*DEBUG*/
-		System.out.println("search trade bank");
+//		/*DEBUG*/
+//		System.out.println("search trade bank");
     	AbstractMap.SimpleEntry<Float, int[]> bank = searchTradeBank();
     	if (bank.getKey()>=0) {
     		actionValues.add(bank.getKey());
@@ -1113,7 +1132,8 @@ public abstract class RLStrategy {
     	
 //    	System.out.println("actionvalues " + actionValues.isEmpty());
     	if (actionValues.isEmpty()) {
-    		System.out.println("choose do nothing");
+//    		/*DEBUG*/
+//    		System.out.println("choose do nothing");
     		return(new AbstractMap.SimpleEntry<Integer, int[]>(END_TURN, null));
     	}
     	
@@ -1122,59 +1142,70 @@ public abstract class RLStrategy {
     	
     	//if state without any action is better: do nothing
     	if (maxAndIndex.getKey() < currentStateValue) {
-    		System.out.println("choose do nothing");
+//    		/*DEBUG*/
+//    		System.out.println("choose do nothing");
     		return(new AbstractMap.SimpleEntry<Integer, int[]>(END_TURN, null));
     	}
     	
     	switch (actionNames.get(maxAndIndex.getValue())) {
     	  case PLAY_DISC:
-    		System.out.println("choose discovery");
+//    		/*DEBUG*/
+//    		System.out.println("choose discovery");
     	    result = new AbstractMap.SimpleEntry<Integer, int[]>(PLAY_DISC, discovery.getValue());
     	    break;
 
     	  case PLAY_MONO:
-    		  System.out.println("choose monopoly");
+//    		  /*DEBUG*/
+//    		  System.out.println("choose monopoly");
     		  result = new AbstractMap.SimpleEntry<Integer, int[]>(PLAY_MONO, new int[]{monopoly.getValue()});
     		  break;
     		  
     	  case PLAY_ROADS:
-    		  System.out.println("choose play roads card");
+//    		  /*DEBUG*/
+//    		  System.out.println("choose play roads card");
     		  int[] roadsToBuild = Arrays.stream(roads.getValue()).mapToInt(i -> i).toArray();
     		  result = new AbstractMap.SimpleEntry<Integer, int[]>(PLAY_ROADS, roadsToBuild);
     		  break;
     		  
     	  case PLAY_KNIGHT:
-    		  System.out.println("choose play knight");
-    		  result = new AbstractMap.SimpleEntry<Integer, int[]>(PLAY_KNIGHT, new int[]{monopoly.getValue()});
+//    		  /*DEBUG*/
+//    		  System.out.println("choose play knight");
+    		  result = new AbstractMap.SimpleEntry<Integer, int[]>(PLAY_KNIGHT, knight.getValue());
     		  break;
     	
     	  case PLACE_SETTLEMENT:
-    		  System.out.println("choose place settlement");
+//    		  /*DEBUG*/
+//    		  System.out.println("choose place settlement");
     		  result = new AbstractMap.SimpleEntry<Integer, int[]>(PLACE_SETTLEMENT, new int[]{settlement.getValue()});
     		  break;
     	  
     	  case PLACE_CITY:
-    		  System.out.println("choose place city");
+//    		  /*DEBUG*/
+//    		  System.out.println("choose place city");
     		  result = new AbstractMap.SimpleEntry<Integer, int[]>(PLACE_CITY, new int[]{city.getValue()});
     		  break;
     		  
     	  case PLACE_ROAD:
-    		  System.out.println("choose place road " + ourPlayerData.getPotentialRoads().contains(road.getValue()));
+//    		  /*DEBUG*/
+//    		  System.out.println("choose place road " + ourPlayerData.getPotentialRoads().contains(road.getValue()));
     		  result = new AbstractMap.SimpleEntry<Integer, int[]>(PLACE_ROAD, new int[]{road.getValue()});
     		  break;
     		 
     	  case BUY_DEVCARD:
-    		  System.out.println("choose buy devcard");
+//    		  /*DEBUG*/
+//    		  System.out.println("choose buy devcard");
     		  result = new AbstractMap.SimpleEntry<Integer, int[]>(BUY_DEVCARD, null);
     		  break;
     		  
     	  case TRADE_BANK:
-    		  System.out.println("choose trade bank");
+//    		  /*DEBUG*/
+//    		  System.out.println("choose trade bank");
     		  result = new AbstractMap.SimpleEntry<Integer, int[]>(TRADE_BANK, bank.getValue());
     		  break;
 
     	  default:
-    		  System.out.println("choose do nothing");
+//    		  /*DEBUG*/
+//    		  System.out.println("choose do nothing");
     		  result = new AbstractMap.SimpleEntry<Integer, int[]>(END_TURN, null);
     	}
     	
@@ -1188,6 +1219,8 @@ public abstract class RLStrategy {
     protected abstract void readMemory();
     
     protected abstract void synchroniseMemory();
+    
+    protected abstract void updateReward();
 
     
     protected class CustomPair {

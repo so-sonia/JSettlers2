@@ -930,15 +930,25 @@ public class SOCRobotBrain extends Thread
         ourPlayerNumber = ourPlayerData.getPlayerNumber();
         playerTrackers = new HashMap<Integer, SOCPlayerTracker>();
         playerTrackers.put(new Integer(ourPlayerNumber), ourPlayerTracker);
+        
+//        /*DEBUG*/
+//        System.out.println(client.getNickname() +  ". there are " + game.getAvailableSeatCount() + 
+//        		" free seats left in the game");
 
         for (int pn = 0; pn < game.maxPlayers; pn++)
         {
-            if ((pn != ourPlayerNumber) && ! game.isSeatVacant(pn))
+//            /*DEBUG*/
+//        	System.out.println(client.getNickname() +  ". player number " + pn + " is at the game: " + game.isSeatVacant(pn));
+        	
+        	if ((pn != ourPlayerNumber) && ! game.isSeatVacant(pn))
             {
                 SOCPlayerTracker tracker = new SOCPlayerTracker(game.getPlayer(pn), this);
                 playerTrackers.put(new Integer(pn), tracker);
             }
         }
+        
+//        /*DEBUG*/
+//        System.out.println(client.getNickname() +  ". There are " + playerTrackers.size() + " trackers");
 
         decisionMaker = new SOCRobotDM(this);
         negotiator = new SOCRobotNegotiator(this);
@@ -5292,11 +5302,9 @@ public class SOCRobotBrain extends Thread
     protected void writeStats() {
 		BufferedWriter writer = null;
         try {
-        	Path path = Paths.get("log", "RL_RND_stat.txt");
+        	Path path = Paths.get("log", "RL_LT2_stat.txt");
             writer = new BufferedWriter(new FileWriter(path.toFile(), true));
             
-            String res = Arrays.toString(ourPlayerData.getResourceRollStats())
-            		.replace("[", "").replace("]", "");
             int[] ports = new int[6];
         	boolean[] portFlags = ourPlayerData.getPortFlags();
         	

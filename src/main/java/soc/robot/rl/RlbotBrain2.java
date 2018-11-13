@@ -455,8 +455,8 @@ public class RlbotBrain2 extends SOCRobotBrain {
                         rejectedPlayDevCardType = -1;
                         rejectedPlayInvItem = null;
                         
-                        //DEBUG
-                        System.out.println("ITS OUR TURN");
+//                        //DEBUG
+//                        System.out.println("ITS OUR TURN");
                     }
 
                     /**
@@ -950,8 +950,8 @@ public class RlbotBrain2 extends SOCRobotBrain {
                                             buildingPlan.clear();
                                             negotiator.resetTargetPieces();
                                              */
-                                        //DEBUG
-                                        System.out.println("END TURN");
+//                                        //DEBUG
+//                                        System.out.println("END TURN");
 
                                         pause(1500);
                                         client.endTurn(game);
@@ -1104,27 +1104,27 @@ public class RlbotBrain2 extends SOCRobotBrain {
 
                         counter = 0;
                         //TEST
-//                        client.discard(game, rlStrategy.discard( 
-//                        		((SOCDiscardRequest) mes).getNumberOfDiscards()));
+                        client.discard(game, rlStrategy.discard( 
+                        		((SOCDiscardRequest) mes).getNumberOfDiscards()));
                         
-                        SOCResourceSet discards = new SOCResourceSet();
-                        discards =  rlStrategy.discard(((SOCDiscardRequest) mes).getNumberOfDiscards());
-                        int[] intDiscards = discards.getAmounts(false);
-                        System.out.println("set to discard" + Arrays.toString(intDiscards));                      
-                        
-                        SOCResourceSet discardsn = new SOCResourceSet();
-                        SOCGame.discardOrGainPickRandom(
-                        		ourPlayerData.getResources(), ((SOCDiscardRequest) mes).getNumberOfDiscards(), 
-                        		true, discardsn, rand);
-                        
-                        intDiscards = discardsn.getAmounts(false);
-                        System.out.println("random set to discard" + Arrays.toString(intDiscards));
-                        
-                        client.discard(game, discards);
+//                        SOCResourceSet discards = new SOCResourceSet();
+//                        discards =  rlStrategy.discard(((SOCDiscardRequest) mes).getNumberOfDiscards());
+//                        int[] intDiscards = discards.getAmounts(false);
+//                        System.out.println("set to discard" + Arrays.toString(intDiscards));                      
+//                        
+//                        SOCResourceSet discardsn = new SOCResourceSet();
+//                        SOCGame.discardOrGainPickRandom(
+//                        		ourPlayerData.getResources(), ((SOCDiscardRequest) mes).getNumberOfDiscards(), 
+//                        		true, discardsn, rand);
+//                        
+//                        intDiscards = discardsn.getAmounts(false);
+//                        System.out.println("random set to discard" + Arrays.toString(intDiscards));
+////                        
+//                        client.discard(game, discards);
                         //ENDTEST
                         
-                        /*DEBUG*/
-                    	System.out.println("finished discarding");
+//                        /*DEBUG*/
+//                    	System.out.println("finished discarding");
                     	
                         //  }
                         break;
@@ -1244,6 +1244,7 @@ public class RlbotBrain2 extends SOCRobotBrain {
 
         //D.ebugPrintln("STOPPING AND DEALLOCATING");
         writeStats();
+        rlStrategy.updateReward();
         rlStrategy.writeMemory();
         
         gameEventQ = null;
@@ -1547,6 +1548,13 @@ public class RlbotBrain2 extends SOCRobotBrain {
                 pause(500);
                 client.putPiece(game, whatWeWantToBuild);
                 pause(1000);
+                
+//                /*DEBUG*/
+//                System.out.println(game.getName() +"." + ourPlayerNumber + ".brain. AfterplaceS has potential city " + ourPlayerData.hasPotentialCity());
+//        		System.out.println(game.getName() +"." + ourPlayerNumber + ".brain. AfterplaceS has settlements " + ourPlayerData.getSettlements().size());
+//        		System.out.println(game.getName() +"." + ourPlayerNumber + ".brain. AfterplaceS has cities " + ourPlayerData.getCities().size());
+//        		System.out.println(game.getName() +"." + ourPlayerNumber + ".brain. AfterplaceS has city pieces " + ourPlayerData.getNumPieces(SOCPlayingPiece.CITY));
+            	
             }
             break;
 
@@ -1575,6 +1583,13 @@ public class RlbotBrain2 extends SOCRobotBrain {
                 pause(500);
                 client.putPiece(game, whatWeWantToBuild);
                 pause(1000);
+                
+//                /*DEBUG*/
+//                System.out.println(game.getName() +"." + ourPlayerNumber + ".brain. AfterplaceC has potential city " + ourPlayerData.hasPotentialCity());
+//        		System.out.println(game.getName() +"." + ourPlayerNumber + ".brain. AfterplaceC has settlements " + ourPlayerData.getSettlements().size());
+//        		System.out.println(game.getName() +"." + ourPlayerNumber + ".brain. AfterplaceC has cities " + ourPlayerData.getCities().size());
+//        		System.out.println(game.getName() +"." + ourPlayerNumber + ".brain. AfterplaceC has city pieces " + ourPlayerData.getNumPieces(SOCPlayingPiece.CITY));
+            	
             }
             break;
 
@@ -3374,14 +3389,18 @@ public class RlbotBrain2 extends SOCRobotBrain {
     {
     	super.setOurPlayerData();
     	ourPlayerData = game.getPlayer(client.getNickname());
-        ourPlayerTracker = new SOCPlayerTracker(ourPlayerData, this);
+//        ourPlayerTracker = new SOCPlayerTracker(ourPlayerData, this);
         ourPlayerNumber = ourPlayerData.getPlayerNumber();
         
         decisionMaker = new SOCRobotDM(this);
         negotiator = new SOCRobotNegotiator(this);
         openingBuildStrategy = new OpeningBuildStrategy(game, ourPlayerData);
         monopolyStrategy = new MonopolyStrategy(game, ourPlayerData);
-        rlStrategy = new RLStrategyRandom(this);
+        
+        
+//        /*DEBUG*/
+//        System.out.println("There are " + playerTrackers.size() + " trackers");
+        rlStrategy = new RLStrategyLookupTable(this);
 
       
         // Verify expected face (fast or smart robot)
@@ -3811,6 +3830,13 @@ public class RlbotBrain2 extends SOCRobotBrain {
                 cancelWrongPiecePlacementLocal(whatWeWantToBuild);
                 // cancel sets whatWeWantToBuild = null;
             }
+            
+//            /*DEBUG*/
+//            System.out.println(game.getName() +"." + ourPlayerNumber + ".brain. BeforeplaceS has potential city " + ourPlayerData.hasPotentialCity());
+//    		System.out.println(game.getName() +"." + ourPlayerNumber + ".brain. BeforeplaceS has settlements " + ourPlayerData.getSettlements().size());
+//    		System.out.println(game.getName() +"." + ourPlayerNumber + ".brain. BeforeplaceS has cities " + ourPlayerData.getCities().size());
+//    		System.out.println(game.getName() +"." + ourPlayerNumber + ".brain. BeforeplaceS has city pieces " + ourPlayerData.getNumPieces(SOCPlayingPiece.CITY));
+        	
             break;
     		
     	case RLStrategy.PLACE_ROAD:
@@ -3851,6 +3877,12 @@ public class RlbotBrain2 extends SOCRobotBrain {
                 // cancel sets whatWeWantToBuild = null;
             }
 
+//            /*DEBUG*/
+//            System.out.println(game.getName() +"." + ourPlayerNumber + ".brain. BeforeplaceC has potential city " + ourPlayerData.hasPotentialCity());
+//    		System.out.println(game.getName() +"." + ourPlayerNumber + ".brain. BeforeplaceC has settlements " + ourPlayerData.getSettlements().size());
+//    		System.out.println(game.getName() +"." + ourPlayerNumber + ".brain. BeforeplaceC has cities " + ourPlayerData.getCities().size());
+//    		System.out.println(game.getName() +"." + ourPlayerNumber + ".brain. BeforeplaceC has city pieces " + ourPlayerData.getNumPieces(SOCPlayingPiece.CITY));
+        	
             break;
     		
     	case RLStrategy.BUY_DEVCARD:
@@ -3862,6 +3894,12 @@ public class RlbotBrain2 extends SOCRobotBrain {
     	}
     	
    }
+    
+    public void handleRLStartegyAfterAddingPlayer() {
+    	if (rlStrategy!=null) {
+    		rlStrategy.updateStateAfterAddingPlayer();
+    	}
+    }
 
     
       

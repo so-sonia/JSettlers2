@@ -1,9 +1,12 @@
 package soc.robot.rl;
 
 import soc.game.SOCGame;
+import soc.message.SOCChangeFace;
 import soc.message.SOCMessage;
+import soc.message.SOCSitDown;
 import soc.robot.SOCRobotBrain;
 import soc.robot.SOCRobotClient;
+import soc.robot.SOCRobotDM;
 import soc.util.CappedQueue;
 import soc.util.SOCRobotParameters;
 
@@ -67,6 +70,72 @@ public class RlbotClient extends SOCRobotClient {
     public int getUpdateFrequency() {
 		return updateFrequency;
 	}
+    
+    /**
+     * handle the "someone is sitting down" message
+     * @param mes  the message
+     */
+    @Override
+    protected void handleSITDOWN(SOCSitDown mes)
+    {
+        /**
+         * tell the game that a player is sitting
+         */
+        SOCGame ga = games.get(mes.getGame());
+
+        if (ga != null)
+        {
+            ga.addPlayer(mes.getNickname(), mes.getPlayerNumber());
+
+            /**
+             * set the robot flag
+             */
+            ga.getPlayer(mes.getPlayerNumber()).setRobotFlag(mes.isRobot(), false);
+
+            /**
+             * let the robot brain find our player object if we sat down
+             */
+            if (nickname.equals(mes.getNickname()))
+            {
+                SOCRobotBrain brain = robotBrains.get(mes.getGame());
+
+                /**
+                 * retrieve the proper face for our strategy
+                 */
+                int faceId;
+                switch (brain.getRobotParameters().getStrategyType())
+                {
+                case SOCRobotDM.SMART_STRATEGY:
+                    faceId = -1;  // smarter robot face
+                    break;
+
+                default:
+                    faceId = 0;   // default robot face
+                }
+
+                brain.setOurPlayerData();
+                brain.start();
+
+                /**
+                 * change our face to the robot face
+                 */
+                put(SOCChangeFace.toCmd(ga.getName(), mes.getPlayerNumber(), faceId));
+            }
+            else
+            {
+                /**
+                 * add tracker for player in previously vacant seat
+                 */
+                RlbotBrain2 brain = (RlbotBrain2) robotBrains.get(mes.getGame());
+
+                if (brain != null)
+                {
+                    brain.addPlayerTracker(mes.getPlayerNumber());
+                    brain.handleRLStartegyAfterAddingPlayer();
+                }
+            }
+        }
+    }
     
 
 

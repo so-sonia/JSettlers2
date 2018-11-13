@@ -23,6 +23,10 @@
  **/
 package soc.server;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -1987,6 +1991,9 @@ public class SOCGameHandler extends GameHandler
              * Before sending state "OVER", enforce current player number.
              * This helps the client's copy of game recognize winning condition.
              */
+        	/*DEBUGS*/
+        	System.out.println("Game state is over");
+        	
             srv.messageToGame(gname, (ga.clientVersionLowest >= SOCGameElements.MIN_VERSION)
                 ? new SOCGameElements(gname, SOCGameElements.CURRENT_PLAYER, cpn)
                 : new SOCSetTurn(gname, cpn));
@@ -2263,6 +2270,14 @@ public class SOCGameHandler extends GameHandler
          *  that was already called before sendGameStateOVER.)
          */
         SOCPlayer winPl = ga.getPlayer(ga.getCurrentPlayerNumber());
+        
+        /* code added by Sonia */
+        String gnameSer = srv.getName() + "_" + gname;
+        for (SOCPlayer pn : ga.getPlayers()) {
+        	pn.writeStats(gnameSer);        	
+        }
+        writeStats(ga, gnameSer);
+        
 
         if ((winPl.getTotalVP() < ga.vp_winner) && ! ga.hasScenarioWinCondition)
         {
@@ -3880,6 +3895,41 @@ public class SOCGameHandler extends GameHandler
 
         if (takeMon)
             srv.gameList.releaseMonitorForGame(gaName);
+    }
+    
+    
+    public void writeStats(SOCGame ga, String gameName) {
+		BufferedWriter writer = null;
+        try {
+        	/*STATS*/
+        	Path path = Paths.get("log", "RL_LT_stat.txt");
+            writer = new BufferedWriter(new FileWriter(path.toFile(), true));
+            Date now = new Date();
+            Date gstart = ga.getStartTime();
+            if (gstart != null)
+            {
+                final int gameRounds = ga.getRoundCount();
+                long gameSeconds = ((now.getTime() - gstart.getTime())+500L) / 1000L;
+                final long gameMinutes = gameSeconds / 60L;
+                gameSeconds = gameSeconds % 60L;
+                writer.write(gameName + ", " 
+                		+ ga.getPlayerWithWin().getPlayerNumber() + ", "
+            			+  gameRounds + ", " 
+            			+ gameMinutes + ", "
+            			+ gameSeconds 
+            			);
+                writer.newLine();
+            }
+                       
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                // Close the writer regardless of what happens...
+                writer.close();
+            } catch (Exception e) {
+            }
+        }
     }
 
 }

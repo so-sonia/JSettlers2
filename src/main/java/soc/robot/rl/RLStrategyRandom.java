@@ -50,6 +50,12 @@ public class RLStrategyRandom extends RLStrategy {
 
 	}
 	
+	@Override
+	protected void updateReward() {
+		// TODO Auto-generated method stub
+
+	}
+	
 	protected void writeStats() {
 		SOCPlayer[] players = game.getPlayers();
 		String nickname = brain.getClient().getNickname();

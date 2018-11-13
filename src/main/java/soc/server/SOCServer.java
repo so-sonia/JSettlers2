@@ -546,7 +546,7 @@ public class SOCServer extends Server
      * @see #checkForExpiredTurns(long)
      * @since 1.1.11
      */
-    public static int ROBOT_FORCE_ENDTURN_SECONDS = 12;
+    public static int ROBOT_FORCE_ENDTURN_SECONDS = 8;
         // If this value is changed, also update the jsettlers.bots.timeout.turn
         // comments in /src/main/bin/jsserver.properties.sample.
 
@@ -5818,21 +5818,31 @@ public class SOCServer extends Server
 
         // TODO start more than one here
         // TODO property to control # "a few" games started here
+        int maxInitGames = 10;
+        
+        /*if hasGameListMonitor==true that means were initializing bot only game after
+         * ending one of the games, therefore we should initialize just one game.
+         * When the server is starting we will initialize 10 games.
+         */
+        if (hasGameListMonitor)
+        	maxInitGames = 1;
+        
+        for (int i=0; i<maxInitGames && numRobotOnlyGamesRemaining>0; i++ ) {
+        	String gaName = "~botsOnly~" + numRobotOnlyGamesRemaining;
 
-        String gaName = "~botsOnly~" + numRobotOnlyGamesRemaining;
+            SOCGame newGame = createGameAndBroadcast
+                (null, gaName, SOCGameOption.getAllKnownOptions(), Version.versionNumber(), true, hasGameListMonitor);
 
-        SOCGame newGame = createGameAndBroadcast
-            (null, gaName, SOCGameOption.getAllKnownOptions(), Version.versionNumber(), true, hasGameListMonitor);
+            if (newGame != null)
+            {
+                --numRobotOnlyGamesRemaining;
 
-        if (newGame != null)
-        {
-            --numRobotOnlyGamesRemaining;
-
-            System.out.println("Started bot-only game: " + gaName);
-            newGame.setGameState(SOCGame.READY);
-            readyGameAskRobotsJoin(newGame, null, 0);
-        } else {
-            // TODO game name existed
+                System.out.println("Started bot-only game: " + gaName);
+                newGame.setGameState(SOCGame.READY);
+                readyGameAskRobotsJoin(newGame, null, 0);
+            } else {
+                // TODO game name existed
+            }
         }
     }
 

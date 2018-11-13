@@ -272,7 +272,10 @@ public class SOCState {
     	SOCInventory inventory = pn.getInventory();
     	devCards[0] = inventory.getAmount(SOCInventory.OLD, SOCDevCardConstants.UNKNOWN);
     	devCards[1] = inventory.getAmount(SOCInventory.NEW, SOCDevCardConstants.UNKNOWN);   	
-    	playersInfo.get(Integer.valueOf(pn.getPlayerNumber())).setDevCards(devCards);
+    	/*DEBUG*/
+    	SOCPlayerState statepn = playersInfo.get(Integer.valueOf(pn.getPlayerNumber()));
+    	statepn.setDevCards(devCards);
+//    	playersInfo.get(Integer.valueOf(pn.getPlayerNumber())).setDevCards(devCards);
     }
     
     /**
@@ -507,7 +510,7 @@ public class SOCState {
    
    public void updateAll(HashMap<Integer,SOCPlayerTracker> playerTrackers, SOCBoard board) {
 	   Iterator<SOCPlayerTracker> trackersIter = playerTrackers.values().iterator();
-
+	   
        while (trackersIter.hasNext())
        {
            SOCPlayerTracker tracker = trackersIter.next();     
@@ -521,7 +524,7 @@ public class SOCState {
 		   updateMyDevCards(pn);
 		   updateResources(pn, false);
 	   }
-	   else {
+	   else {   
 		   updateDevCards(pn);
 		   updateResources(pn, true);
 	   }
@@ -677,7 +680,9 @@ public class SOCState {
 		/*change the owner of the largest army award if that's a case */
 		if (willGetLA) {
 			pnState.setHasLargestArmy(1);
-			getPlayerState(currentPlayerWithLA).setHasLargestArmy(0);
+			if (currentPlayerWithLA!=null) {
+				getPlayerState(currentPlayerWithLA).setHasLargestArmy(0);
+			}
 		}
    }
    

@@ -27,9 +27,13 @@ import soc.message.SOCMessage;
 import soc.util.IntPair;
 import soc.util.NodeLenVis;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.Serializable;
-
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -2999,6 +3003,7 @@ public class SOCPlayer implements SOCDevCardConstants, Serializable, Cloneable
             {
                 removePiece(piece, null);
                 ourNumbers.undoUpdateNumbers(piece, board);
+                
 
                 //
                 // update our port flags
@@ -3014,6 +3019,8 @@ public class SOCPlayer implements SOCDevCardConstants, Serializable, Cloneable
             //
             undoPutPieceAuxSettlement(pieceCoord);
 
+            /*Added by Sonia*/
+            clearPotentialCity(pieceCoord);
             //
             // check adjacent nodes
             //
@@ -3627,7 +3634,7 @@ public class SOCPlayer implements SOCDevCardConstants, Serializable, Cloneable
      */
     public void updatePotentials(SOCPlayingPiece piece)
     {
-        //D.ebugPrintln("&&& UPDATING POTENTIALS FOR "+piece);
+    	//D.ebugPrintln("&&& UPDATING POTENTIALS FOR "+piece);
         int tmp;
         final boolean ours;
         boolean blocked;
@@ -3862,8 +3869,13 @@ public class SOCPlayer implements SOCDevCardConstants, Serializable, Cloneable
                     }
                 }
             }
-
-            break;
+            
+//            /*DEBUG*/
+//            if (ours) {
+//            	System.out.println(game.getName() +"." + this.playerNumber  + "Update settlementpotentials. sets " + getSettlements().size() +
+//                		" cities: " + this.getCities().size() + " potcit " + hasPotentialCity());	
+//            }
+             break;
 
         /**
          * a city was placed
@@ -3873,6 +3885,11 @@ public class SOCPlayer implements SOCDevCardConstants, Serializable, Cloneable
             // remove non-potentials
             potentialCities.remove(idInt);
 
+//            /*DEBUG*/
+//            if (ours) {
+//            	 System.out.println(game.getName() +"." + this.playerNumber + "Update citypotentials. sets " + getSettlements().size() +
+//                 		" cities: " + this.getCities().size() + " potcit " + potentialCities.size()); 	
+//            }
             break;
 
         }
@@ -4881,6 +4898,63 @@ public class SOCPlayer implements SOCDevCardConstants, Serializable, Cloneable
      */
     public HashSet<Integer> getPotentialRoads(){
     	return(potentialRoads);
+    }
+    
+    /**
+     *  write stats at the end of the game, callled by SOCGameHandler
+     * @author Sonia
+     */
+    public void writeStats(String gameName) {
+		BufferedWriter writer = null;
+        try {
+        	/*STATS*/
+        	Path path = Paths.get("log", "RL_LT_stat.txt");
+            writer = new BufferedWriter(new FileWriter(path.toFile(), true));
+            
+            int[] ports = new int[6];
+        	boolean[] portFlags = getPortFlags();
+        	
+        	for (int i=0; i < ports.length; i++) {
+        		ports[i] = portFlags[i] ? 1 : 0 ;
+        	}
+            String portsString = Arrays.toString(ports)
+            		.replace("[", "").replace("]", "");
+            String res = Arrays.toString(getResourceRollStats())
+            		.replace("[", "").replace("]", "");
+            
+            writer.write(gameName + ", " 
+        			+ getPlayerNumber() + ", " 
+        			+ getName() + ", "
+//        			+ getRobotParameters().getStrategyType() + ", "
+        			+ getTotalVP() + ", "
+        			+ hasLargestArmy() + ", "
+        			+ getNumKnights() + ", "
+        			+ hasLongestRoad() + ", "
+        			+ getInventory().getNumVPItems() + ", "
+        			+ getSettlements().size() + ", "
+        			+ getCities().size() + ", "
+        			+ getRoadsAndShips().size() + ", "
+        			+ res + ","
+        			+ portsString   
+        			);
+            writer.newLine();
+                       
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                // Close the writer regardless of what happens...
+                writer.close();
+            } catch (Exception e) {
+            }
+        }
+//        liczba zdobytych punktów z podziałem na sposób uzyskania (osada, miasto, karta, LR, LA)
+//		game.getPlayer(player number), game.getName() for game name (or make ID for it),
+//		 * 		player.getName() for player name, 
+//		 * 		SOCRobotBrain.getRobotParameters().getStrategyType() (0 = SMART_STRATEGY, 1 = FAST_STRATEGY)
+//		 * 		in each robot client we will have: gamesPlayed, gamesFinished = 0, gamesWon
+//		 * 		from robot client we can get brain by SOCRobotBrain brain = robotBrains.get(mes.getGame());
+	
     }
 
 }
