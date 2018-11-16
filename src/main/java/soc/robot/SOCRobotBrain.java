@@ -999,6 +999,10 @@ public class SOCRobotBrain extends Thread
                 + ((client != null) ? client.getNickname() : ourPlayerData.getName())
                 + " in game " + game.getName()
                 + ": gs=" + game.getGameState());
+        
+        /*added by Sonia*/
+        rbSta.add("------------" + stats() + "---------------");        
+        
         if (waitingForPickSpecialItem != null)
             rbSta.add("  waitingForPickSpecialItem = " + waitingForPickSpecialItem);
         if (game.getGameState() == SOCGame.WAITING_FOR_DISCARDS)
@@ -1990,7 +1994,7 @@ public class SOCRobotBrain extends Thread
                     case SOCMessage.ROBOTDISMISS:
                         if ((! expectDISCARD) && (! expectPLACING_ROBBER))
                         {
-                            client.leaveGame(game, "dismiss msg", false, false);
+                        	client.leaveGame(game, "dismiss msg", false, false);
                             alive = false;
                         }
                         break;
@@ -2054,7 +2058,7 @@ public class SOCRobotBrain extends Thread
         }
 
         //D.ebugPrintln("STOPPING AND DEALLOCATING");
-        writeStats();
+//        writeStats();
         
         gameEventQ = null;
 
@@ -5346,5 +5350,33 @@ public class SOCRobotBrain extends Thread
 //		 * 		in each robot client we will have: gamesPlayed, gamesFinished = 0, gamesWon
 //		 * 		from robot client we can get brain by SOCRobotBrain brain = robotBrains.get(mes.getGame());
 	
+    }
+    
+    protected String stats() {
+
+        int[] ports = new int[6];
+    	boolean[] portFlags = ourPlayerData.getPortFlags();
+    	
+    	for (int i=0; i < ports.length; i++) {
+    		ports[i] = portFlags[i] ? 1 : 0 ;
+    	}
+        String portsString = Arrays.toString(ports)
+        		.replace("[", "").replace("]", "");
+        
+        String plStats = game.getName() + ", " 
+    			+ ourPlayerData.getPlayerNumber() + ", " 
+    			+ ourPlayerData.getName() + ", "
+    			+ getRobotParameters().getStrategyType() + ", "
+    			+ ourPlayerData.getTotalVP() + ", "
+    			+ ourPlayerData.hasLargestArmy() + ", "
+    			+ ourPlayerData.getNumKnights() + ", "
+    			+ ourPlayerData.hasLongestRoad() + ", "
+    			+ ourPlayerData.getInventory().getNumVPItems() + ", "
+    			+ ourPlayerData.getSettlements().size() + ", "
+    			+ ourPlayerData.getCities().size() + ", "
+    			+ ourPlayerData.getRoadsAndShips().size() + ", "
+    			+ portsString;   
+        
+        return plStats;
     }
 }

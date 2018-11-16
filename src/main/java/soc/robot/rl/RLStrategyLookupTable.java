@@ -46,14 +46,14 @@ public class RLStrategyLookupTable extends RLStrategy{
         oldState = new HashMap<SOCPlayer, List<Integer> >();
         readMemory();
         
-//        int gamesPlayed = br.getClient().getGamesPlayed();
-//        int updateFrequency = br.getClient().getUpdateFrequency();
-//        if ((gamesPlayed % updateFrequency)==0) {
-//        	synchroniseMemory();
-//        } else {
-//        	readMemory();
-//        }
-//       
+        int gamesPlayed = br.getClient().getGamesPlayed();
+        int updateFrequency = br.getClient().getUpdateFrequency();
+        if ((gamesPlayed % updateFrequency)==0) {
+        	synchroniseMemory();
+        } else {
+        	readMemory();
+        }
+       
         ArrayList<CustomPair> opp_states = new ArrayList<CustomPair>();
 
         /* adding to memory the state at the beginning of the game */
@@ -314,7 +314,59 @@ public class RLStrategyLookupTable extends RLStrategy{
 	 }
 	 
 	 protected void synchroniseMemory() {
+		 String nickname = brain.getClient().getNickname();
 		 
+		 System.out.println("reading memory");
+		 
+		 HashMap<List<Integer>, Double[]> map = null;
+		 
+		 try (DirectoryStream<Path> dirStream = Files.newDirectoryStream(
+		            Paths.get("memory"),  "RL_LT_*_states_*")) {
+			 
+			 for (Path dir : dirStream) {
+				 map = readPath(dir);
+				 map.forEach(
+						    (key, value) -> states.merge(key, value, (v1, v2) -> 
+						    {Double[] val = new Double[] {
+						    		(v1[0]*v1[1]+v2[0]*v2[1])/(v1[1]+v2[1]), 
+						    		v1[1] + v2[1]}; 
+						    		return val; }) );
+				 dir.toFile().delete();
+			 }
+			 
+			 /*DEBUG*/
+	         System.out.println(states.size() + " states read");
+			 
+	      }catch(IOException ioe)
+	      {
+	         ioe.printStackTrace();
+	         return;
+	      }
+		 
+		 try (DirectoryStream<Path> dirStream = Files.newDirectoryStream(
+		            Paths.get("memory"),  "RL_LT_*_states2_*")) {
+			 
+			 for (Path dir : dirStream) {
+				 map = readPath(dir);
+				 map.forEach(
+						    (key, value) -> states2.merge(key, value, (v1, v2) -> 
+						    {Double[] val = new Double[] {
+						    		(v1[0]*v1[1]+v2[0]*v2[1])/(v1[1]+v2[1]), 
+						    		v1[1] + v2[1]}; 
+						    		return val; }) );
+				 dir.toFile().delete();
+			 }
+			 
+			 /*DEBUG*/
+	         System.out.println(states2.size() + " states2 read");
+			 
+	      }catch(IOException ioe)
+	      {
+	         ioe.printStackTrace();
+	         return;
+	      }
+		 
+		 writeMemory();
 	 }
 	 
 	 protected void writeMemory() {

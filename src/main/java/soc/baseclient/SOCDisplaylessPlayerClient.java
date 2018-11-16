@@ -628,8 +628,8 @@ public class SOCDisplaylessPlayerClient implements Runnable
              * Added 2017-12-23 for v2.0.00.
              */
             case SOCMessage.LASTSETTLEMENT:
-                handleLASTSETTLEMENT((SOCLastSettlement) mes, games.get(((SOCLastSettlement) mes).getGame()));
-                break;
+            	handleLASTSETTLEMENT((SOCLastSettlement) mes, games.get(((SOCLastSettlement) mes).getGame()));
+            	break;
 
             /**
              * the latest dice result
@@ -1079,7 +1079,9 @@ public class SOCDisplaylessPlayerClient implements Runnable
     /**
      * handle the "game stats" message
      */
-    protected void handleGAMESTATS(SOCGameStats mes) {}
+    protected void handleGAMESTATS(SOCGameStats mes) {
+    	
+    }
 
     /**
      * handle the "game text message" message; stub.

@@ -101,6 +101,7 @@ import soc.message.SOCSitDown;
 import soc.message.SOCStartGame;
 import soc.message.SOCStatusMessage;
 import soc.message.SOCTurn;
+import soc.robot.SOCRobotClient;
 import soc.server.genericServer.Connection;
 import soc.util.IntPair;
 import soc.util.SOCGameList;
@@ -1991,12 +1992,16 @@ public class SOCGameHandler extends GameHandler
              * Before sending state "OVER", enforce current player number.
              * This helps the client's copy of game recognize winning condition.
              */
-        	/*DEBUGS*/
-        	System.out.println("Game state is over");
+//        	/*DEBUGS*/
+//        	System.out.println("Game state is over");
+////        	SOCRobotClient rcli;
+////        	rcli = SOCLocalRobotClient.robotClients.get(ga.getPlayer(ga.getCurrentPlayerNumber()).getName());
+////        	rcli.debugPrintBrainStatus(ga.getName(), false);
         	
             srv.messageToGame(gname, (ga.clientVersionLowest >= SOCGameElements.MIN_VERSION)
                 ? new SOCGameElements(gname, SOCGameElements.CURRENT_PLAYER, cpn)
                 : new SOCSetTurn(gname, cpn));
+        
         }
 
         if (! omitGameStateMessage)
@@ -2423,8 +2428,26 @@ public class SOCGameHandler extends GameHandler
         srv.storeGameScores(ga);
 
         if (ga.isBotsOnly)
-        {
-            srv.destroyGameAndBroadcast(gname, "sendGameStateOVER");
+        {	
+//        	 /*DEBUGS*/
+//            System.out.println("Before waiting");
+//            SOCRobotClient rcli;
+//            rcli = SOCLocalRobotClient.robotClients.get(ga.getPlayer(ga.getCurrentPlayerNumber()).getName());
+//            rcli.debugPrintBrainStatus(ga.getName(), false);
+        	
+        	try
+        	{
+        	    Thread.sleep(1000);
+        	}
+        	catch(InterruptedException ex)
+        	{
+        	    Thread.currentThread().interrupt();
+        	}
+//            /*DEBUGS*/
+//            System.out.println("After waiting");
+//            rcli = SOCLocalRobotClient.robotClients.get(ga.getPlayer(ga.getCurrentPlayerNumber()).getName());
+//            rcli.debugPrintBrainStatus(ga.getName(), false);
+//        	srv.destroyGameAndBroadcast(gname, "sendGameStateOVER");
         }
 
         // Server structure more or less ensures sendGameStateOVER is called only once.

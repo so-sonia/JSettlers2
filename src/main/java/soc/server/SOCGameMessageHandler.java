@@ -48,6 +48,7 @@ import soc.game.SOCSpecialItem;
 import soc.game.SOCTradeOffer;
 import soc.game.SOCVillage;
 import soc.message.*;
+import soc.robot.SOCRobotClient;
 import soc.server.genericServer.Connection;
 import soc.util.SOCStringManager;
 
@@ -1897,6 +1898,15 @@ public class SOCGameMessageHandler
                             if (! ga.pendingMessagesOut.isEmpty())
                                 handler.sendGamePendingMessages(ga, false);
                             srv.gameList.releaseMonitorForGame(gaName);
+                            
+//                            /*DEBUGSTEST - 8+ points*/
+//                            if(player.getTotalVP()>7) {
+//                            	System.out.println("Building a road " + player.getName());
+////                            	SOCRobotClient rcli;
+////                            	rcli = SOCLocalRobotClient.robotClients.get(ga.getPlayer(ga.getCurrentPlayerNumber()).getName());
+////                            	rcli.debugPrintBrainStatus(ga.getName(), false);
+//                            }
+//                            /*END DEBUGSTEST*/
 
                             // If needed, call sendTurn or send SOCRollDicePrompt
                             handler.sendTurnStateAtInitialPlacement(ga, player, c, gameState);
@@ -1945,6 +1955,15 @@ public class SOCGameMessageHandler
                             if (! ga.pendingMessagesOut.isEmpty())
                                 handler.sendGamePendingMessages(ga, false);
                             srv.gameList.releaseMonitorForGame(gaName);
+                            
+//                            /*DEBUGSTEST - 8+ points*/
+//                            if(player.getTotalVP()>7) {
+//                            	System.out.println("Building a settlement " + player.getName());
+////                            	SOCRobotClient rcli;
+////                            	rcli = SOCLocalRobotClient.robotClients.get(ga.getPlayer(ga.getCurrentPlayerNumber()).getName());
+////                            	rcli.debugPrintBrainStatus(ga.getName(), false);
+//                            }
+//                            /*END DEBUGSTEST*/
 
                             // Check player and send new game state
                             if (! handler.checkTurn(c, ga))
@@ -2006,6 +2025,15 @@ public class SOCGameMessageHandler
                                 srv.messageToGameKeyed(ga, false, "action.built.nextturn.7.houserule");
                                 // "Starting next turn, dice rolls of 7 may occur (house rule)."
                             srv.gameList.releaseMonitorForGame(gaName);
+                            
+//                            /*DEBUGSTEST - 8+ points*/
+//                            if(player.getTotalVP()>7) {
+//                            	System.out.println("Building a city " + player.getName());
+////                            	SOCRobotClient rcli;
+////                            	rcli = SOCLocalRobotClient.robotClients.get(ga.getPlayer(ga.getCurrentPlayerNumber()).getName());
+////                            	rcli.debugPrintBrainStatus(ga.getName(), false);
+//                            }
+//                            /*END DEBUGSTEST*/
 
                             // Check player and send new game state
                             if (! handler.checkTurn(c, ga))
