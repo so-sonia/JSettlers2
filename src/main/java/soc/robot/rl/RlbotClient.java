@@ -17,11 +17,22 @@ public class RlbotClient extends SOCRobotClient {
 	 */
 	protected int updateFrequency;
 	
+	/**
+	 * memory of states to synchronize between many games at the same time.
+	 * All the states are saved here, even if the brain is killed.
+	 * TO change type for different RL Strategies look for phrase 
+	 * "update type if changed memory"
+	 */
+	protected StateMemoryLookupTable memory;
+	
 	private static final String RBCLASSNAME_RL = RlbotClient.class.getName();
 	
 	public RlbotClient(String h, int p, String nn, String pw, String co, int updateFrequency) {
 		super(h, p, nn, pw, co);
 		this.updateFrequency = updateFrequency;
+		
+		/*update type if changed memory*/
+		this.memory = new StateMemoryLookupTable();
 		rbclass = RBCLASSNAME_RL;
 	}
 	
@@ -70,6 +81,15 @@ public class RlbotClient extends SOCRobotClient {
     public int getUpdateFrequency() {
 		return updateFrequency;
 	}
+    
+    /**
+     * memory is staying by the client so it's not destroyed after killing the brain
+     * update type if changed memory
+     */
+    public StateMemoryLookupTable getStateMemory() {
+		return memory;
+	}
+    
     
     /**
      * handle the "someone is sitting down" message

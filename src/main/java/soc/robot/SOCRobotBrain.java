@@ -2058,7 +2058,7 @@ public class SOCRobotBrain extends Thread
         }
 
         //D.ebugPrintln("STOPPING AND DEALLOCATING");
-//        writeStats();
+        writeStats();
         
         gameEventQ = null;
 

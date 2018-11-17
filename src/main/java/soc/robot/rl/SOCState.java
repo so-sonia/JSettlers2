@@ -325,7 +325,7 @@ public class SOCState {
             if (totalProbability != 0.0f)
             {
             	//SOCResourceConstants.CLAY = 1, therefore we take -1 to fill the array
-            	resourceNumbers[resource-1] = Math.round(totalProbability*10);
+            	resourceNumbers[resource-1] = Math.round(totalProbability*30);
             }
             
         }
@@ -349,7 +349,7 @@ public class SOCState {
      * @param board on which game is played
      */
     public void updateBoardInfoOnBuildings(SOCPlayer pn, SOCBoard board, int robberHex) {
-    	int[] resourceAdjacentBuildings = new int[6];
+    	int[] resourceAdjacentBuildings = new int[5];
     	Set<Integer> uniqueHexes = new HashSet<Integer>();
     	int blockedByRobber = 0;
     	

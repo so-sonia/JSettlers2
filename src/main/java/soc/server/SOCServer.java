@@ -5818,7 +5818,8 @@ public class SOCServer extends Server
 
         // TODO start more than one here
         // TODO property to control # "a few" games started here
-        int maxInitGames = 10;
+        /*DEBUG INIT GAMES*/
+        int maxInitGames = 1;
         
         /*if hasGameListMonitor==true that means were initializing bot only game after
          * ending one of the games, therefore we should initialize just one game.

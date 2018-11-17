@@ -2447,7 +2447,8 @@ public class SOCGameHandler extends GameHandler
 //            System.out.println("After waiting");
 //            rcli = SOCLocalRobotClient.robotClients.get(ga.getPlayer(ga.getCurrentPlayerNumber()).getName());
 //            rcli.debugPrintBrainStatus(ga.getName(), false);
-//        	srv.destroyGameAndBroadcast(gname, "sendGameStateOVER");
+        	
+        	srv.destroyGameAndBroadcast(gname, "sendGameStateOVER");
         }
 
         // Server structure more or less ensures sendGameStateOVER is called only once.

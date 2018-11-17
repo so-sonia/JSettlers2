@@ -44,7 +44,9 @@ public class RLStrategyLookupTable extends RLStrategy{
         states = new HashMap<List<Integer>, Double[]>();    
         states2 = new HashMap<List<Integer>, Double[]>(); 
         oldState = new HashMap<SOCPlayer, List<Integer> >();
-        readMemory();
+        
+//        readMemory();
+        StateMemoryLookupTable memory = br.getClient().getStateMemory();
         
         int gamesPlayed = br.getClient().getGamesPlayed();
         int updateFrequency = br.getClient().getUpdateFrequency();
@@ -95,6 +97,9 @@ public class RLStrategyLookupTable extends RLStrategy{
     	for (SOCPlayer opp : opponents) {
     		List<Integer> playerState = Arrays.stream(tmpState.getState(opp)).boxed().collect(Collectors.toList());
     		
+    		/*DEBUG*/
+    		System.out.println("opponent state: " + Arrays.toString(playerState.toArray()));
+    		
     		int points = opp.getPublicVP();
     		Double value = null;
     		Double[] valueCount = states.get(playerState);
@@ -122,6 +127,9 @@ public class RLStrategyLookupTable extends RLStrategy{
     		secondState[i*2] = opp_states.get(i).getKey().intValue();
     		secondState[i*2 + 1] = opp_states.get(i).getValue().intValue();
     	}
+    	
+    	/*DEBUG*/
+		System.out.println("state2: " + Arrays.toString(secondState));
     	
     	List<Integer> secondStateList = Arrays.stream(secondState).boxed().collect(Collectors.toList());
     	
@@ -267,6 +275,9 @@ public class RLStrategyLookupTable extends RLStrategy{
 		            Paths.get("memory"),  "RL_LT_" + nickname + "_states_*")) {
 			 
 			 for (Path dir : dirStream) {
+				 
+				 /*DEBUG*/
+				 System.out.println("reading from path: " + dir.toString());
 				 map = readPath(dir);
 				 map.forEach(
 						    (key, value) -> states.merge(key, value, (v1, v2) -> 
@@ -314,8 +325,8 @@ public class RLStrategyLookupTable extends RLStrategy{
 	 }
 	 
 	 protected void synchroniseMemory() {
-		 String nickname = brain.getClient().getNickname();
 		 
+		 /*DEBUG*/
 		 System.out.println("reading memory");
 		 
 		 HashMap<List<Integer>, Double[]> map = null;
@@ -370,23 +381,24 @@ public class RLStrategyLookupTable extends RLStrategy{
 	 }
 	 
 	 protected void writeMemory() {
-
 		 String nickname = brain.getClient().getNickname();
 		 Path path = Paths.get("memory", "RL_LT_" + nickname + "_states_" + game.getName()); 
 		 writePath(path, states);
+		 
 		 /*DEBUG*/
          System.out.println("Serialized HashMap states data is saved in " + path.toString());
          System.out.println(states.size() + " states saved");
-//         states.forEach((key, value) -> System.out.println(
-//        		 Arrays.toString(key.toArray()) + " : " + Arrays.toString(value)));
+         states.forEach((key, value) -> System.out.println(
+        		 Arrays.toString(key.toArray()) + " : " + Arrays.toString(value)));
 
          path = Paths.get("memory", "RL_LT_" + nickname + "_states2_" + game.getName()); 
          writePath(path, states2);
+         
          /*DEBUG*/
          System.out.println("Serialized HashMap states2 data is saved in " + path.toString());
          System.out.println(states2.size() + " states2 saved");
-//         states2.forEach((key, value) -> System.out.println(
-//        		 Arrays.toString(key.toArray()) + " : " + Arrays.toString(value)));
+         states2.forEach((key, value) -> System.out.println(
+        		 Arrays.toString(key.toArray()) + " : " + Arrays.toString(value)));
 
 	 }
 	
@@ -396,15 +408,20 @@ public class RLStrategyLookupTable extends RLStrategy{
 	 }
 	
 	protected void updateReward() {
-		int winPn = game.getPlayerWithWin().getPlayerNumber();
 		
-		/*DEBUG*/
-		System.out.println(game.getName() + " winner is: " + game.getPlayerWithWin().getName());
-		
+		SOCPlayer winPn = game.getPlayerWithWin();
 		int reward = 0;
-		if (winPn==ourPlayerNumber) {
-			reward = 1;
+		
+		if (winPn!=null) {
+			/*DEBUG*/
+			System.out.println(game.getName() + " winner is: " + game.getPlayerWithWin().getName());
+
+			int winPnNum = winPn.getPlayerNumber();
+			if (winPnNum==ourPlayerNumber) {
+				reward = 1;
+			}
 		}
+
 		updateStateValue(reward);
 	}
 	 
