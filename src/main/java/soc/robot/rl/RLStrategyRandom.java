@@ -32,24 +32,24 @@ public class RLStrategyRandom extends RLStrategy {
 		currentStateValue = new Random().nextGaussian()*0.05 + 0.5;
 	}
 
-	@Override
-	protected void writeMemory() {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	protected void readMemory() {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	protected void synchroniseMemory() {
-		// TODO Auto-generated method stub
-
-	}
-	
+//	@Override
+//	protected void writeMemory() {
+//		// TODO Auto-generated method stub
+//
+//	}
+//
+//	@Override
+//	protected void readMemory() {
+//		// TODO Auto-generated method stub
+//
+//	}
+//
+//	@Override
+//	protected void synchroniseMemory() {
+//		// TODO Auto-generated method stub
+//
+//	}
+//	
 	@Override
 	protected void updateReward() {
 		// TODO Auto-generated method stub

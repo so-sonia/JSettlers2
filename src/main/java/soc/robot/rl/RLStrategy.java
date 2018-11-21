@@ -8,8 +8,9 @@
  * we just use info from SOCPlayer
  * [done] TO DO: all the actions, that change data of SOCStatePlayer should be changed in SOCstate
  * not in RLStrategy
- * TO DO: there's a problem with searchPlayRoads() gives exception but doesn't block
+ * [done] TO DO: there's a problem with searchPlayRoads() gives exception but doesn't block
  * [done] TO DO: discarding 5 cards instead of 4, maybe there's the mistake 
+ * [done] TO DO: when place for setllement is chosen: settlement can change LR
  * To KNOW: when player has 10 points server sends message SOCGameState OVER (= 1000)
  * TO DO: for statistics when over of after each round get game and players within with 
  * 		game.getPlayer(player number), game.getName() for game name (or make ID for it),
@@ -127,7 +128,18 @@ public abstract class RLStrategy {
     
     public void updateStateAfterAddingPlayer(){
     	state = new SOCState(ourPlayerNumber, playerTrackers);
-        state.updateAll(playerTrackers, board);   
+        state.updateAll(playerTrackers, board); 
+        
+        opponents = new Vector<SOCPlayer>();
+        Iterator<SOCPlayerTracker> trackersIter = playerTrackers.values().iterator();
+        
+        while (trackersIter.hasNext())
+  	  {
+  		  SOCPlayerTracker tracker = trackersIter.next();
+  		  if (tracker.getPlayer().getPlayerNumber() != ourPlayerNumber) {
+  			  opponents.add(tracker.getPlayer());
+  		  }
+  	  }
     }
     
     /**
@@ -486,6 +498,12 @@ public abstract class RLStrategy {
     	 */
     	AbstractMap.SimpleEntry<Float, Integer> maxAndIndex = getMaxAndIndex(state_values);
     	int[] placeAndPlayerToRob = new int[2];
+    	
+//    	/*DEBUG*/
+//	    System.out.println(game.getName() + " maxAndIndex key " + maxAndIndex.getKey() + " maxAndIndex value " + 
+//	    		maxAndIndex.getValue() + " robPositions size " + robPositions.size() + 
+//	    		" playersToRob size " + playersToRob.size());
+    	
     	placeAndPlayerToRob[0] = robPositions.get(maxAndIndex.getValue());
     	placeAndPlayerToRob[1] = playersToRob.get(maxAndIndex.getValue());
     	AbstractMap.SimpleEntry<Float, int[]> result = new AbstractMap.SimpleEntry<Float, int[]>(
@@ -968,7 +986,8 @@ public abstract class RLStrategy {
     	
     	updateStateValue();
     	
-    	if (ourPlayerData.getInventory().hasPlayable(SOCDevCardConstants.KNIGHT)) {
+    	if (ourPlayerData.getInventory().hasPlayable(SOCDevCardConstants.KNIGHT) &&
+    			!ourPlayerData.hasPlayedDevCard()) {
     		
     		AbstractMap.SimpleEntry<Float, int[]> playKnight = searchPlaceRobberOrPlayKnight(state, true);
         	float roll = searchRollDice();
@@ -993,7 +1012,7 @@ public abstract class RLStrategy {
     public int[] moveRobber() {
     	
 //    	/*DEBUG*/
-//    	System.out.println("moveRobber() was called");
+//    	System.out.println(brain.getName() + " moveRobber() was called");
     	
     	updateStateValue();
     	
@@ -1214,11 +1233,11 @@ public abstract class RLStrategy {
     
     protected abstract void updateStateValue();
     
-    protected abstract void writeMemory();
+//    protected abstract void writeMemory();
     
-    protected abstract void readMemory();
+//    protected abstract void readMemory();
     
-    protected abstract void synchroniseMemory();
+//    protected abstract void synchroniseMemory();
     
     protected abstract void updateReward();
 

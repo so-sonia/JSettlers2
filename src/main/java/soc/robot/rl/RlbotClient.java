@@ -2,7 +2,10 @@ package soc.robot.rl;
 
 import soc.game.SOCGame;
 import soc.message.SOCChangeFace;
+import soc.message.SOCDeleteGame;
+import soc.message.SOCForceEndTurn;
 import soc.message.SOCMessage;
+import soc.message.SOCRobotDismiss;
 import soc.message.SOCSitDown;
 import soc.robot.SOCRobotBrain;
 import soc.robot.SOCRobotClient;
@@ -156,6 +159,49 @@ public class RlbotClient extends SOCRobotClient {
             }
         }
     }
+    
+    @Override
+    protected void handleROBOTDISMISS(SOCRobotDismiss mes) {
+    	/*DEBUG*/
+    	System.out.println("Robot dismissed " + getNickname());
+    	
+//    	if ((gamesPlayed % updateFrequency)== (updateFrequency-1)) {
+//        	memory.writeMemory(getNickname());
+    	if ((gamesPlayed % updateFrequency)== 1) {
+        	memory.writeMemory(getNickname());        	 	
+        	
+        	/*DEBUG*/
+        	System.out.println("Memory saved");
+        } 
+//    	else if ((gamesPlayed % updateFrequency)== 0) {
+//        	memory.synchronize();
+//        }
+//    	
+    	super.handleROBOTDISMISS(mes);
+    }
+    
+    @Override
+    protected void handleDELETEGAME(SOCDeleteGame mes)
+    {
+    	/*DEBUG*/
+    	System.out.println("Robot dismissed " + getNickname());
+//    	System.out.println("gamesPlayed: " + gamesPlayed + "; gamesPlayed % updateFrequency: " +
+//    			gamesPlayed % updateFrequency);    	
+    	
+    	if ((gamesPlayed % updateFrequency)== (updateFrequency-1)) {
+        	memory.writeMemory(getNickname());     	 	
+        	
+        	/*DEBUG*/
+        	System.out.println("Memory saved");
+        } 
+//    	else if ((gamesPlayed % updateFrequency)== 0) {
+//        	memory.synchronize();
+//        }
+//    	   	
+    	super.handleDELETEGAME(mes);
+    }
+    
+
     
 
 

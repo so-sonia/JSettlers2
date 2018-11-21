@@ -555,12 +555,22 @@ public class SOCState {
        return result;
    }
    
+   /**
+    * After placing a settlement information on resource probabilities, unique numbers, 
+    * number od adjacent buildings, ports, points, number of potential settlements,
+    * Longest road and player with longest road award (placing a settlement may destroy 
+    * somebody's longest road and award will change ownership.
+    * @param pn
+    * @param board
+    */
    public void updatePlaceSettlement(SOCPlayer pn,  SOCBoard board) {
 	   updateResourceProbabilitiesAndUniqueNumbers(pn, board.getRobberHex());
 	   updateBoardInfoOnBuildings(pn, board, board.getRobberHex());
 	   updatePorts(pn);
 	   updatePoints(pn);
 	   updateNumberOfPotentialSettlements(pn);
+	   updateHasLongestRoad(pn);
+	   updateLongestRoad(pn);
    }
    
    /**

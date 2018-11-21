@@ -61,6 +61,7 @@ import soc.message.SOCDiceResult;
 import soc.message.SOCDiscard;
 import soc.message.SOCDiscardRequest;
 import soc.message.SOCFirstPlayer;
+import soc.message.SOCForceEndTurn;
 import soc.message.SOCGameElements;
 import soc.message.SOCGameMembers;
 import soc.message.SOCGameServerText;
@@ -3407,6 +3408,10 @@ public class SOCGameHandler extends GameHandler
             }
         }
 
+//        /*TURNEND DEBUG*/
+//        srv.messageToGame(gaName, new SOCForceEndTurn(gaName, plNumber));
+        
+        
         /**
          * Now end their turn, or handle any needed responses if not current player.
          * Don't call forceEndGameTurn()/ga.forceEndTurn() unless we need to.

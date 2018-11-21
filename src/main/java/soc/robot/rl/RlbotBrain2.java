@@ -680,13 +680,18 @@ public class RlbotBrain2 extends SOCRobotBrain {
                         {
                             if (! ((expectROLL_OR_CARD || expectPLAY1) && (counter < 4000)))
                             {
-                                if (moveRobberOnSeven)
+                                
+                            	if (moveRobberOnSeven)
                                 {
                                     // robber moved because 7 rolled on dice
                                     moveRobberOnSeven = false;
                                     waitingForGameState = true;
                                     counter = 0;
                                     expectPLAY1 = true;
+                                    moveRobber = rlStrategy.moveRobber();
+                                    
+//                                    /*DEBUG*/
+//                                    System.out.println(getName() + " 7 was rolled by us");
                                 }
                                 else
                                 {
@@ -705,8 +710,14 @@ public class RlbotBrain2 extends SOCRobotBrain {
                                     }
                                 }
 
+//                                /*DEBUG*/
+//                                System.out.println(getName() + " Robber is being moved");
+                                
                                 counter = 0;
                                 moveRobber();
+                                
+//                                /*DEBUG*/
+//                                System.out.println(getName() + " Robber moved");
                             }
                         }
                     }
@@ -801,7 +812,7 @@ public class RlbotBrain2 extends SOCRobotBrain {
                             if (buildingPlan.empty() && (ourPlayerData.getResources().getTotal() > 1)
                                 && (failedBuildingAttempts < MAX_DENIED_BUILDING_PER_TURN))
                             {
-                                planBuilding();
+//                                planBuilding();
 
                                     /*
                                      * planBuilding takes these actions, sets buildingPlan and other fields
@@ -1243,9 +1254,9 @@ public class RlbotBrain2 extends SOCRobotBrain {
         }
 
         //D.ebugPrintln("STOPPING AND DEALLOCATING");
-        writeStats();
+//        writeStats();
         rlStrategy.updateReward();
-        rlStrategy.writeMemory();
+//        rlStrategy.writeMemory();
         
         gameEventQ = null;
 
@@ -1310,6 +1321,7 @@ public class RlbotBrain2 extends SOCRobotBrain {
         counter = 0;
         expectROLL_OR_CARD = true;
         waitingForOurTurn = true;
+        moveRobber = null;
 
         doneTrading = (robotParameters.getTradeFlag() != 1);
 
@@ -1800,6 +1812,10 @@ public class RlbotBrain2 extends SOCRobotBrain {
                 	AbstractMap.SimpleEntry<Integer, int[]> action = rlStrategy.rollOrPlayKnight();
                 	
                 	if(action.getKey() == RLStrategy.PLAY_KNIGHT) {
+                		
+//                		/*DEBUG*/
+//                		System.out.println(getName() + " decided play knight");
+                		
                 		moveRobber = action.getValue();
                 		playKnightCard();  // sets expectPLACING_ROBBER, waitingForGameState
                 		return;
@@ -3400,7 +3416,8 @@ public class RlbotBrain2 extends SOCRobotBrain {
         
 //        /*DEBUG*/
 //        System.out.println("There are " + playerTrackers.size() + " trackers");
-        rlStrategy = new RLStrategyLookupTable(this);
+//        rlStrategy = new RLStrategyLookupTable(this);
+        rlStrategy = new RLStrategyRandom(this);
 
       
         // Verify expected face (fast or smart robot)
@@ -3716,7 +3733,6 @@ public class RlbotBrain2 extends SOCRobotBrain {
     /**
      * move the robber
      */
-    @Override
     protected void moveRobber()
     {
         if (moveRobber==null) {

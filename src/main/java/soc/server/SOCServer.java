@@ -546,7 +546,7 @@ public class SOCServer extends Server
      * @see #checkForExpiredTurns(long)
      * @since 1.1.11
      */
-    public static int ROBOT_FORCE_ENDTURN_SECONDS = 8;
+    public static int ROBOT_FORCE_ENDTURN_SECONDS = 12;
         // If this value is changed, also update the jsettlers.bots.timeout.turn
         // comments in /src/main/bin/jsserver.properties.sample.
 
@@ -5819,7 +5819,7 @@ public class SOCServer extends Server
         // TODO start more than one here
         // TODO property to control # "a few" games started here
         /*DEBUG INIT GAMES*/
-        int maxInitGames = 1;
+        int maxInitGames = 40;
         
         /*if hasGameListMonitor==true that means were initializing bot only game after
          * ending one of the games, therefore we should initialize just one game.
@@ -6048,8 +6048,11 @@ public class SOCServer extends Server
                     }
                 }
             }
-            if (iNon == -1)
-                return;  // <--- Early return: Non-3p bot seat not found ---
+            if (iNon == -1) {
+            	/*DEBUG*/
+            	System.out.println("Early return from creating the game");
+            	return;  // <--- Early return: Non-3p bot seat not found ---
+            }
 
             // pick bot3p, an unused 3p bot to fill iNon
             int s = unused3p.size();
@@ -6064,9 +6067,12 @@ public class SOCServer extends Server
             }
             robotSeatsConns[iNon] = bot3p;
             curr3pSeat[iNon] = true;
+            
+            /*added by Sonia*/
+            curr3pReq++;
 
             --nAdd;
-        }
+        }        
     }
 
     /**

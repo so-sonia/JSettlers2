@@ -207,7 +207,7 @@
 # complex logic than the built-in bots. The third-party bots will have this
 # many seconds to make a move before the server ends their turn.
 # Default is 8 seconds, the same limit as the built-in bots.
-# jsettlers.bots.timeout.turn=20
+# jsettlers.bots.timeout.turn=40
 
 # -- End of list of recognized available properties --
 
