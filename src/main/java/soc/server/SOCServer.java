@@ -2065,7 +2065,7 @@ public class SOCServer extends Server
                 {
                     if (ga.getClientVersionMinRequired() <= cliVers)
                     {
-                        gameList.addMember(c, gaName);
+                    	gameList.addMember(c, gaName);
                         result = true;
                     } else {
                         cliVersOld = true;
@@ -5819,7 +5819,7 @@ public class SOCServer extends Server
         // TODO start more than one here
         // TODO property to control # "a few" games started here
         /*DEBUG INIT GAMES*/
-        int maxInitGames = 40;
+        int maxInitGames = 20;
         
         /*if hasGameListMonitor==true that means were initializing bot only game after
          * ending one of the games, therefore we should initialize just one game.
@@ -5841,6 +5841,16 @@ public class SOCServer extends Server
                 System.out.println("Started bot-only game: " + gaName);
                 newGame.setGameState(SOCGame.READY);
                 readyGameAskRobotsJoin(newGame, null, 0);
+                
+                try
+            	{
+            	    Thread.sleep(400);
+            	}
+            	catch(InterruptedException ex)
+            	{
+            	    Thread.currentThread().interrupt();
+            	}
+                
             } else {
                 // TODO game name existed
             }
@@ -6049,7 +6059,7 @@ public class SOCServer extends Server
                 }
             }
             if (iNon == -1) {
-            	/*DEBUG*/
+            	/*DEBUGA*/
             	System.out.println("Early return from creating the game");
             	return;  // <--- Early return: Non-3p bot seat not found ---
             }

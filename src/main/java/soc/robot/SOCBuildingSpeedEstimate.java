@@ -470,7 +470,7 @@ public class SOCBuildingSpeedEstimate
      *     returns 0.
      * @since 2.0.00
      */
-    protected final int calculateRollsFast
+    public final int calculateRollsFast
         (final ResourceSet startingResources, final SOCResourceSet targetResources, final int cutoff, final boolean[] ports)
     {
         try

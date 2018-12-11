@@ -1,5 +1,7 @@
 package soc.robot.rl;
 
+/*for now always needs to update resources, resource probabilities and ports*/
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -15,7 +17,6 @@ import soc.game.SOCPlayer;
 import soc.game.SOCPlayerNumbers;
 import soc.game.SOCResourceConstants;
 import soc.game.SOCSettlement;
-import soc.robot.SOCPlayerTracker;
 
 public class SOCState {
 	
@@ -30,19 +31,18 @@ public class SOCState {
 	
 	/**
 	 * Constructor for the state object. Data is updated through 
-	 * {@link #updateAll(HashMap) updateAll(playerTrackers)} method.
+	 * {@link #updateAll(HashMap) updateAll(players)} method.
 	 * @param pln our player number
 	 */
-	public SOCState(int pln, HashMap<Integer,SOCPlayerTracker> playerTrackers){
+	public SOCState(int pln, HashMap<Integer,SOCPlayer> players){
 		playersInfo = new HashMap<Integer, SOCPlayerState>();	
 		ourPlayerNumber = pln;
 		
-		Iterator<SOCPlayerTracker> trackersIter = playerTrackers.values().iterator();
+		Iterator<SOCPlayer> playersIter = players.values().iterator();
 
-	       while (trackersIter.hasNext())
+	       while (playersIter.hasNext())
 	       {
-	           SOCPlayerTracker tracker = trackersIter.next();     
-	           addPlayerState(tracker.getPlayer().getPlayerNumber());
+	           addPlayerState(playersIter.next().getPlayerNumber());
 	       }
 	}	
 	
@@ -51,187 +51,7 @@ public class SOCState {
 		ourPlayerNumber = pln;
 	}	
 	
-	/**
-	 * In case the field in {@link SOCPlayerState} will be changed. Method {@link #stateLength()}
-	 * should be changed accordingly;
-	 */
-    class SOCPlayerState{
-    	
-    	private int[] resources;
-    	private int points;
-    	
-    	/**In order: VP cards, road building cards, discovery cards, monopoly cards, Knight cards. 
-         * Except for VP cards all the other cards are counted separately by state: old, new*/
-    	private int[] devCards;
-    	private int[] resourceProbabilities;
-    	private int[] resourceAdjacentBuildings;
-    	private int uniqueAdjacentHexes;
-    	private int uniqueNumbers;
-    	private int longestRoad;
-    	private int playedKnights;
-    	private int hasLongestRoad;
-    	private int hasLargestArmy;
-    	private int[] ports;
-    	private int blockedByRobber;
-    	private int numberOfPotentialSettlements;
-    	
-    	public SOCPlayerState(){
-    		
-    	}
-    	public SOCPlayerState(SOCPlayerState state){
-    		this.resources = Arrays.copyOf(state.resources, state.resources.length);
-    		this.points = state.points;
-    		this.devCards =  Arrays.copyOf(state.devCards, state.devCards.length);
-    		this.resourceProbabilities = Arrays.copyOf(state.resourceProbabilities, 
-    				state.resourceProbabilities.length);
-    		this.resourceAdjacentBuildings = Arrays.copyOf(state.resourceAdjacentBuildings, 
-    				state.resourceAdjacentBuildings.length);
-    		this.uniqueAdjacentHexes = state.uniqueAdjacentHexes;
-    		this.uniqueNumbers = state.uniqueNumbers;
-    		this.longestRoad = state.longestRoad;
-    		this.playedKnights = state.playedKnights;
-    		this.hasLargestArmy = state.hasLargestArmy;
-    		this.hasLongestRoad = state.hasLongestRoad;
-    		this.ports = Arrays.copyOf(state.ports, state.ports.length);
-    		this.blockedByRobber = state.blockedByRobber;
-    		this.numberOfPotentialSettlements = state.numberOfPotentialSettlements;
-    	}
-		public int[] getResources() {
-			return resources;
-		}
-		public void setResources(int[] resources) {
-			this.resources = resources;
-		}
-		public void copyResources(int[] resources) {
-			for (int i=0; i< this.resources.length ; i++) {
-				this.resources[i] = resources[i];
-			}
-		}
-		public int getPoints() {
-			return points;
-		}
-		public void setPoints(int points) {
-			this.points = points;
-		}
-		public int[] getDevCards() {
-			return devCards;
-		}
-		public void setDevCards(int[] devCards) {
-			this.devCards = devCards;
-		}
-		public int[] getResourceProbabilities() {
-			return resourceProbabilities;
-		}
-		public void setResourceProbabilities(int[] resourceProbabilities) {
-			this.resourceProbabilities = resourceProbabilities;
-		}
-		public int[] getResourceAdjacentBuildings() {
-			return resourceAdjacentBuildings;
-		}
-		public void setResourceAdjacentBuildings(int[] resourceAdjacentBuildings) {
-			this.resourceAdjacentBuildings = resourceAdjacentBuildings;
-		}
-		public int getUniqueAdjacentHexes() {
-			return uniqueAdjacentHexes;
-		}
-		public void setUniqueAdjacentHexes(int uniqueAdjacentHexes) {
-			this.uniqueAdjacentHexes = uniqueAdjacentHexes;
-		}
-		public int getUniqueNumbers() {
-			return uniqueNumbers;
-		}
-		public void setUniqueNumbers(int uniqueNumbers) {
-			this.uniqueNumbers = uniqueNumbers;
-		}
-		public int getLongestRoad() {
-			return longestRoad;
-		}
-		public void setLongestRoad(int longestRoad) {
-			this.longestRoad = longestRoad;
-		}
-		public int getPlayedKnights() {
-			return playedKnights;
-		}
-		public void setPlayedKnights(int playedKnights) {
-			this.playedKnights = playedKnights;
-		}
-		public int getHasLongestRoad() {
-			return hasLongestRoad;
-		}
-		public void setHasLongestRoad(int hasLongestRoad) {
-			this.hasLongestRoad = hasLongestRoad;
-		}
-		public int getHasLargestArmy() {
-			return hasLargestArmy;
-		}
-		public void setHasLargestArmy(int hasLargestArmy) {
-			this.hasLargestArmy = hasLargestArmy;
-		}
-		public int[] getPorts() {
-			return ports;
-		}
-		public void setPorts(int[] ports) {
-			this.ports = ports;
-		}
-		public int getBlockedByRobber() {
-			return blockedByRobber;
-		}
-		public void setBlockedByRobber(int blockedByRobber) {
-			this.blockedByRobber = blockedByRobber;
-		}
-
-		public int getNumberOfPotentialSettlements() {
-			return numberOfPotentialSettlements;
-		}
-		public void setNumberOfPotentialSettlements(int numberOfPotentialSettlements) {
-			this.numberOfPotentialSettlements = numberOfPotentialSettlements;
-		}
-		public void addPoints(int points) {
-			this.points += points;
-		}
-		public void substractPoints(int points) {
-			this.points -= points;
-		}
-		/**For now length of the array that will be created by the state is calculated by hand.
-		 * TO DO: automate it, so it won't be necessary to update it every time that state will be changing. 
-		 * @return
-		 */
-		public int stateLength() {
-			int size = 0;
-			size += resources.length + devCards.length + resourceProbabilities.length + 
-					resourceAdjacentBuildings.length + ports.length + 9;			
-			return size;
-		}
-		
-		public int[] getStateArray() {
-			int length = stateLength();
-			int[] result = new int[length];
-			result[0] = points;
-			result[1] = uniqueAdjacentHexes;
-			result[2] = uniqueNumbers;
-			result[3] = longestRoad;
-			result[4] = playedKnights;
-			result[5] = hasLongestRoad;
-			result[6] = hasLargestArmy;
-			result[7] = blockedByRobber;
-			result[8] = numberOfPotentialSettlements;
-			int i = 9;
-			System.arraycopy(resources, 0, result, i, resources.length);
-			i += resources.length;
-			System.arraycopy(devCards, 0, result, i, devCards.length);
-			i += devCards.length;
-			System.arraycopy(resourceProbabilities, 0, result, i, resourceProbabilities.length);
-			i += resourceProbabilities.length;
-			System.arraycopy(resourceAdjacentBuildings, 0, result, i, resourceAdjacentBuildings.length);
-			i += resourceAdjacentBuildings.length;
-			System.arraycopy(ports, 0, result, i, ports.length);
-			i += ports.length;
-			
-			return result;
-		}
-    }
-    
-    public void addPlayerState(int playerNumber) {
+	public void addPlayerState(int playerNumber) {
     	SOCPlayerState state = new SOCPlayerState();
         playersInfo.put(new Integer(playerNumber), state);
     }
@@ -459,7 +279,7 @@ public class SOCState {
      * @param pn player for whom to update points
      */
     public void updatePoints(SOCPlayer pn) {
-    	playersInfo.get(Integer.valueOf(pn.getPlayerNumber())).setPoints(pn.getPublicVP());
+    	playersInfo.get(Integer.valueOf(pn.getPlayerNumber())).setPoints(pn.getTotalVP());
     }
     
     /**
@@ -508,13 +328,12 @@ public class SOCState {
     	playersInfo.get(Integer.valueOf(pn.getPlayerNumber())).setNumberOfPotentialSettlements(settlements);
     }
    
-   public void updateAll(HashMap<Integer,SOCPlayerTracker> playerTrackers, SOCBoard board) {
-	   Iterator<SOCPlayerTracker> trackersIter = playerTrackers.values().iterator();
+   public void updateAll(HashMap<Integer,SOCPlayer> players, SOCBoard board) {
+	   Iterator<SOCPlayer> playersIter = players.values().iterator();
 	   
-       while (trackersIter.hasNext())
-       {
-           SOCPlayerTracker tracker = trackersIter.next();     
-           updatePlayer(tracker.getPlayer(), board);
+       while (playersIter.hasNext())
+       {    
+           updatePlayer(playersIter.next(), board);
        }
    }
     
@@ -601,6 +420,19 @@ public class SOCState {
    public void updatePlaceRobber(SOCPlayer pn,  SOCBoard board, int robberHex) {
 	   updateResourceProbabilitiesAndUniqueNumbers(pn, robberHex);
 	   updateBoardInfoOnBuildings(pn, board, robberHex);
+   }
+   
+   
+   public void updatePlaceRobberAll(HashMap<Integer,SOCPlayer> players, 
+		   		SOCBoard board, int robberHex) {
+	   
+	   Iterator<SOCPlayer> playersIter = players.values().iterator();
+	   while (playersIter.hasNext())
+       {    
+           SOCPlayer pn = playersIter.next();
+           updateResourceProbabilitiesAndUniqueNumbers(pn, robberHex);
+    	   updateBoardInfoOnBuildings(pn, board, robberHex);
+       }
    }
    
    /**

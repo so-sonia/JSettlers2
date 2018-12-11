@@ -235,7 +235,7 @@ public class RlbotBrain2 extends SOCRobotBrain {
     
 	/**
 	 * Responsible for all logic behind bots moves. Uses Reinforcement learning algorithm to 
-	 * learn which movements bring about the best outcomes and 
+	 * learn which movements bring about the best outcomes 
 	 */
     protected RLStrategy rlStrategy;
     
@@ -3417,7 +3417,7 @@ public class RlbotBrain2 extends SOCRobotBrain {
 //        /*DEBUG*/
 //        System.out.println("There are " + playerTrackers.size() + " trackers");
 //        rlStrategy = new RLStrategyLookupTable(this);
-        rlStrategy = new RLStrategyRandom(this);
+        rlStrategy = new RLStrategyRandom(game, ourPlayerNumber, client.getStateMemory());
 
       
         // Verify expected face (fast or smart robot)
@@ -3733,6 +3733,7 @@ public class RlbotBrain2 extends SOCRobotBrain {
     /**
      * move the robber
      */
+    @Override
     protected void moveRobber()
     {
         if (moveRobber==null) {

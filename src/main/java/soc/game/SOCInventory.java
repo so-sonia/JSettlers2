@@ -505,5 +505,11 @@ public class SOCInventory
 
         news.clear();
     }
+    
+    /*added by Sonia*/
+    public int getOld()
+    {
+        return playables.size() + kept.size();
+    }
 
 }

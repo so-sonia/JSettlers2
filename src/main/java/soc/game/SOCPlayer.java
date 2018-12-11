@@ -838,7 +838,7 @@ public class SOCPlayer implements SOCDevCardConstants, Serializable, Cloneable
      *</UL>
      * @since 1.1.14
      */
-    void updateAtTurn()
+    public void updateAtTurn()
     {
         rolledResources.clear();
     }
@@ -860,7 +860,7 @@ public class SOCPlayer implements SOCDevCardConstants, Serializable, Cloneable
      *</UL>
      * @since 1.1.14
      */
-    void updateAtOurTurn()
+    public void updateAtOurTurn()
     {
         inventory.newToOld();
         lastActionBankTrade_give = null;
@@ -4908,7 +4908,8 @@ public class SOCPlayer implements SOCDevCardConstants, Serializable, Cloneable
 		BufferedWriter writer = null;
         try {
         	/*STATS*/
-        	Path path = Paths.get("log", "RL_LT_stat.txt");
+//        	Path path = Paths.get("log", "SE_RL_RND_stat.txt");
+        	Path path = Paths.get("SE_RL_RND_stat.txt");
             writer = new BufferedWriter(new FileWriter(path.toFile(), true));
             
             int[] ports = new int[6];
@@ -4955,6 +4956,35 @@ public class SOCPlayer implements SOCDevCardConstants, Serializable, Cloneable
 //		 * 		in each robot client we will have: gamesPlayed, gamesFinished = 0, gamesWon
 //		 * 		from robot client we can get brain by SOCRobotBrain brain = robotBrains.get(mes.getGame());
 	
+    }
+    
+    public void stats() {
+    	int[] ports = new int[6];
+    	boolean[] portFlags = getPortFlags();
+    	
+    	for (int i=0; i < ports.length; i++) {
+    		ports[i] = portFlags[i] ? 1 : 0 ;
+    	}
+        String portsString = Arrays.toString(ports)
+        		.replace("[", "").replace("]", "");
+        String res = Arrays.toString(getResourceRollStats())
+        		.replace("[", "").replace("]", "");
+        
+        String stats = getPlayerNumber() + ", " 
+    			+ getName() + ", "
+//    			+ getRobotParameters().getStrategyType() + ", "
+    			+ getTotalVP() + ", "
+    			+ hasLargestArmy() + ", "
+    			+ getNumKnights() + ", "
+    			+ hasLongestRoad() + ", "
+    			+ getInventory().getNumVPItems() + ", "
+    			+ getSettlements().size() + ", "
+    			+ getCities().size() + ", "
+    			+ getRoadsAndShips().size() + ", "
+    			+ res + ","
+    			+ portsString;
+        
+        System.out.println(stats);
     }
 
 }

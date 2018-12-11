@@ -722,6 +722,18 @@ public class OpeningBuildStrategy {
               (settlementNode, plannedRoadDestinationNode);
 
         dummy.destroyPlayer();
+        
+        /*code added by Sonia
+         * Rarely happens but sometimes initial selection doesn't work.
+         * in this case just take first available road */
+        if (!ourPlayerData.isPotentialRoad(roadEdge)) {
+        	Vector<Integer> posroads = board.getAdjacentEdgesToNode(settlementNode);
+        	Object[] posr = posroads.stream().map(Integer::toHexString).toArray();
+        	System.err.println("No road selected by system. From pod roads: " + Arrays.toString(posr)
+        				+ " We chose road: " + Integer.toHexString(posroads.get(0))
+        				+ " last set coord: " + Integer.toHexString(settlementNode));
+        	return posroads.get(0);
+        }
 
         return roadEdge;
     }

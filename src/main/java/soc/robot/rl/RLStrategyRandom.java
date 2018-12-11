@@ -6,14 +6,15 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Random;
 
+import soc.game.SOCGame;
 import soc.game.SOCPlayer;
 
 public class RLStrategyRandom extends RLStrategy {
 
-	public RLStrategyRandom(RlbotBrain2 br) {
-		super(br);	
-		state = new SOCState(ourPlayerNumber, playerTrackers);
-        state.updateAll(playerTrackers, board);   
+	public RLStrategyRandom(SOCGame game, int pn, StateMemoryLookupTable memory) {
+		super(game, pn);	
+		state = new SOCState(ourPlayerNumber, players);
+        state.updateAll(players, board);   
 	}
 
 	@Override
@@ -28,7 +29,7 @@ public class RLStrategyRandom extends RLStrategy {
 //		for (SOCPlayer opp : opponents) {
 //			state.updateResources(opp, true);
 //		}		
-		state.updateAll(playerTrackers, board);
+		state.updateAll(players, board);
 		currentStateValue = new Random().nextGaussian()*0.05 + 0.5;
 	}
 
@@ -51,18 +52,17 @@ public class RLStrategyRandom extends RLStrategy {
 //	}
 //	
 	@Override
-	protected void updateReward() {
+	public void updateReward() {
 		// TODO Auto-generated method stub
 
 	}
 	
 	protected void writeStats() {
 		SOCPlayer[] players = game.getPlayers();
-		String nickname = brain.getClient().getNickname();
 		
 		BufferedWriter writer = null;
         try {
-        	Path path = Paths.get("log", "RL_RND_stats_" + nickname);
+        	Path path = Paths.get("log", "RL_RND_stats_");
             writer = new BufferedWriter(new FileWriter(path.toFile()));
             
             for (SOCPlayer pn : players) {

@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 
+import soc.game.SOCGame;
 import soc.game.SOCPlayer;
 
 
@@ -39,17 +40,18 @@ public class RLStrategyLookupTable extends RLStrategy{
 //    /** Memory for all the states type 2 */
 //    protected HashMap<List<Integer>, Double[]> states2;
 //	
-	public RLStrategyLookupTable(RlbotBrain2 br) {
-		super(br);
-		state = new SOCState(ourPlayerNumber, playerTrackers);
-        state.updateAll(playerTrackers, board);   
+	public RLStrategyLookupTable(SOCGame game, int pn, StateMemoryLookupTable memory) {
+		super(game, pn);
+		this.memory = memory;
+		state = new SOCState(ourPlayerNumber, players);
+	    state.updateAll(players, board);      
         
 //        states = new HashMap<List<Integer>, Double[]>();    
 //        states2 = new HashMap<List<Integer>, Double[]>(); 
         oldState = new HashMap<SOCPlayer, List<Integer> >();
         
 //        readMemory();
-        this.memory = br.getClient().getStateMemory();
+//        this.memory = br.getClient().getStateMemory();
         
 //        int gamesPlayed = br.getClient().getGamesPlayed();
 //        int updateFrequency = br.getClient().getUpdateFrequency();
@@ -64,7 +66,7 @@ public class RLStrategyLookupTable extends RLStrategy{
         /* adding to memory the state at the beginning of the game */
     	for (SOCPlayer opp : opponents) {
     		List<Integer> playerState = Arrays.stream(state.getState(opp)).boxed().collect(Collectors.toList());
-    		int points = opp.getPublicVP();
+    		int points = opp.getTotalVP();
     		Double value = new Random().nextGaussian()*0.05 + 0.5; //or maybe random?
     		memory.setState1Value(playerState, new Double[] {value, Double.valueOf(1.0)});
 			oldState.put(opp, playerState);
@@ -103,7 +105,7 @@ public class RLStrategyLookupTable extends RLStrategy{
 //    		/*DEBUG*/
 //    		System.out.println("opponent state: " + Arrays.toString(playerState.toArray()));
     		
-    		int points = opp.getPublicVP();
+    		int points = opp.getTotalVP();
     		Double value = null;
     		Double[] valueCount = memory.getState1Value(playerState);
     		if (valueCount==null) {
@@ -150,13 +152,23 @@ public class RLStrategyLookupTable extends RLStrategy{
     }
 	
 	 protected void updateStateValue() {
-	    	state.updateAll(playerTrackers, board);
+	    	state.updateAll(players, board);
 	    	ArrayList<CustomPair> opp_states = new ArrayList<CustomPair>();
 	    	
 	    	for (SOCPlayer opp : opponents) {
 	    		List<Integer> oldPlayerState = oldState.get(opp);
-	    		Double oldPlayerStateValue = memory.getState1Value(oldPlayerState)[0];
-	    		Double oldPlayerStateCount = memory.getState1Value(oldPlayerState)[1];
+	    		
+	    		Double[] oldPlayerStateValueCount = memory.getState1Value(oldPlayerState);
+	    		Double oldPlayerStateValue = null;
+	    		Double oldPlayerStateCount = Double.valueOf(1.0);
+	    		/*obvious mistake, should never be null, but error sometimes thrown*/
+	    		if (oldPlayerStateValueCount==null) {
+	    			oldPlayerStateValue = new Random().nextGaussian()*0.05 + 0.5; //or maybe random?
+	    			memory.setState1Value(oldPlayerState, new Double[] {oldPlayerStateValue, Double.valueOf(1.0)});
+	    		} else {
+	    			oldPlayerStateValue = oldPlayerStateValueCount[0];
+	    			oldPlayerStateCount = oldPlayerStateValueCount[1];
+	    		}
 	    		
 	    		List<Integer> newPlayerState = Arrays.stream(state.getState(opp)).boxed().collect(Collectors.toList());
 	    		Double newPlayerStateValue = null;
@@ -174,7 +186,7 @@ public class RLStrategyLookupTable extends RLStrategy{
 	    		oldState.put(opp, newPlayerState);
 	    		
 	    		//calculation to get new state array
-	    		int points = opp.getPublicVP();
+	    		int points = opp.getTotalVP();
 	    		int roundedPlayerStateValue = Math.round(newPlayerStateValue.floatValue()*10);
 	    		opp_states.add(new CustomPair(Integer.valueOf(points), Integer.valueOf(roundedPlayerStateValue)));
 	    	}
@@ -201,8 +213,16 @@ public class RLStrategyLookupTable extends RLStrategy{
 				newStateValue = newStateValueCount[0];
 			}
 	    	
-			Double oldStateValue = memory.getState2Value(oldState2)[0];
-			Double oldStateCount = memory.getState2Value(oldState2)[1];
+			Double oldStateValue = null;
+			Double oldStateCount = Double.valueOf(1.0);
+			Double[] oldStateValueCount = memory.getState2Value(oldState2);
+			if (oldStateValueCount==null) {
+				oldStateValue = new Random().nextGaussian()*0.05 + 0.5;
+			} else {
+				oldStateValue = oldStateValueCount[0];
+				oldStateCount = oldStateValueCount[1];	
+			}
+
 	    	
 	    	oldStateValue = oldStateValue + alpha * (gamma * newStateValue  - oldStateValue);
 	    	
@@ -212,13 +232,23 @@ public class RLStrategyLookupTable extends RLStrategy{
 	    }
 	 
 	 protected void updateStateValue(int reward) {
-	    	state.updateAll(playerTrackers, board);
+	    	state.updateAll(players, board);
 	    	ArrayList<CustomPair> opp_states = new ArrayList<CustomPair>();
 	    	
 	    	for (SOCPlayer opp : opponents) {
 	    		List<Integer> oldPlayerState = oldState.get(opp);
-	    		Double oldPlayerStateValue = memory.getState1Value(oldPlayerState)[0];
-	    		Double oldPlayerStateCount = memory.getState1Value(oldPlayerState)[1];
+
+	    		Double[] oldPlayerStateValueCount = memory.getState1Value(oldPlayerState);
+	    		Double oldPlayerStateValue = null;
+	    		Double oldPlayerStateCount = Double.valueOf(1.0);
+	    		/*obvious mistake, should never be null, but error sometimes thrown*/
+	    		if (oldPlayerStateValueCount==null) {
+	    			oldPlayerStateValue = new Random().nextGaussian()*0.05 + 0.5; //or maybe random?
+	    			memory.setState1Value(oldPlayerState, new Double[] {oldPlayerStateValue, Double.valueOf(1.0)});
+	    		} else {
+	    			oldPlayerStateValue = oldPlayerStateValueCount[0];
+	    			oldPlayerStateCount = oldPlayerStateValueCount[1];
+	    		}
 	    		
 	    		List<Integer> newPlayerState = Arrays.stream(state.getState(opp)).boxed().collect(Collectors.toList());
 	    		Double newPlayerStateValue = Double.valueOf(reward);
@@ -235,7 +265,7 @@ public class RLStrategyLookupTable extends RLStrategy{
 	    		oldState.put(opp, newPlayerState);
 	    		
 	    		//calculation to get new state array
-	    		int points = opp.getPublicVP();
+	    		int points = opp.getTotalVP();
 	    		int roundedPlayerStateValue = Math.round(newPlayerStateValue.floatValue()*10);
 	    		opp_states.add(new CustomPair(Integer.valueOf(points), Integer.valueOf(roundedPlayerStateValue)));
 	    	}
@@ -259,9 +289,17 @@ public class RLStrategyLookupTable extends RLStrategy{
 			} else {
 				memory.setState2Value(newStateList, new Double[] {newStateValue, ++newStateValueCount[1]});
 			}
-			Double oldStateValue = memory.getState2Value(oldState2)[0];
-			Double oldStateCount = memory.getState2Value(oldState2)[1];
-	    	
+
+			Double oldStateValue = null;
+			Double oldStateCount = Double.valueOf(1.0);
+			Double[] oldStateValueCount = memory.getState2Value(oldState2);
+			if (oldStateValueCount==null) {
+				oldStateValue = new Random().nextGaussian()*0.05 + 0.5;
+			} else {
+				oldStateValue = oldStateValueCount[0];
+				oldStateCount = oldStateValueCount[1];	
+			}
+
 	    	oldStateValue = oldStateValue + alpha * (gamma * newStateValue  - oldStateValue);
 	    	
 	    	memory.setState2Value(oldState2, new Double[] {oldStateValue, ++oldStateCount});
@@ -410,7 +448,7 @@ public class RLStrategyLookupTable extends RLStrategy{
 
 	 }
 	
-	protected void updateReward() {
+	public void updateReward() {
 		
 		SOCPlayer winPn = game.getPlayerWithWin();
 		int reward = 0;

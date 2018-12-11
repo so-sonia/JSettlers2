@@ -860,6 +860,7 @@ public class SOCRobotClient extends SOCDisplaylessPlayerClient
         robotBrains.put(gaName, rb);
     }
 
+    
     /**
      * handle the "game members" message, which indicates the entire game state has now been sent.
      * If we have a {@link #seatRequests} for this game, sit down now.

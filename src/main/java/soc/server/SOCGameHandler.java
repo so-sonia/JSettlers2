@@ -61,7 +61,6 @@ import soc.message.SOCDiceResult;
 import soc.message.SOCDiscard;
 import soc.message.SOCDiscardRequest;
 import soc.message.SOCFirstPlayer;
-import soc.message.SOCForceEndTurn;
 import soc.message.SOCGameElements;
 import soc.message.SOCGameMembers;
 import soc.message.SOCGameServerText;
@@ -3007,7 +3006,7 @@ public class SOCGameHandler extends GameHandler
 
         String gname = ga.getName();
         final int gs = ga.getGameState(),
-            cpn = ga.getCurrentPlayerNumber();
+        cpn = ga.getCurrentPlayerNumber();
 
         if (ga.clientVersionLowest >= SOCPlayerElement.VERSION_FOR_CARD_ELEMENTS)
             srv.messageToGame(gname, new SOCPlayerElement
@@ -3407,10 +3406,6 @@ public class SOCGameHandler extends GameHandler
                 srv.gameList.takeMonitorForGame(gaName);
             }
         }
-
-//        /*TURNEND DEBUG*/
-//        srv.messageToGame(gaName, new SOCForceEndTurn(gaName, plNumber));
-        
         
         /**
          * Now end their turn, or handle any needed responses if not current player.

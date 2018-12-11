@@ -35,7 +35,8 @@ public class RlbotClient extends SOCRobotClient {
 		this.updateFrequency = updateFrequency;
 		
 		/*update type if changed memory*/
-		this.memory = new StateMemoryLookupTable();
+		this.memory = new StateMemoryLookupTable(port);
+//		memory.readMemory("rlbot2_200copy");
 		rbclass = RBCLASSNAME_RL;
 	}
 	
@@ -165,18 +166,30 @@ public class RlbotClient extends SOCRobotClient {
     	/*DEBUG*/
     	System.out.println("Robot dismissed " + getNickname());
     	
-//    	if ((gamesPlayed % updateFrequency)== (updateFrequency-1)) {
-//        	memory.writeMemory(getNickname());
-    	if ((gamesPlayed % updateFrequency)== 1) {
-        	memory.writeMemory(getNickname());        	 	
-        	
-        	/*DEBUG*/
-        	System.out.println("Memory saved");
-        } 
-//    	else if ((gamesPlayed % updateFrequency)== 0) {
-//        	memory.synchronize();
-//        }
-//    	
+    	if (port==8888) {
+    		if ((gamesPlayed % updateFrequency)== 0) {
+            	memory.synchronise(getNickname());     	 	
+            	
+            	/*DEBUG*/
+            	System.out.println("Memory saved");
+            	
+            } else if ((gamesPlayed % updateFrequency*10)==1) {
+            	memory.writeMemory(getNickname()+ "org" , true);
+            	
+            } else if ((gamesPlayed % updateFrequency*10)==2) {
+            	memory.synchroniseAcrossPlayers(getNickname());
+            }
+    	} else {
+    		if ((gamesPlayed % updateFrequency)== (updateFrequency-1)) {
+    			/*DEBUG*/
+            	System.out.println("Memory saved");
+            	
+            	memory.writeMemory(getNickname(), true);   
+			} else if ((gamesPlayed % updateFrequency)== 0) {
+				memory.readMemory(nickname);
+			}
+    	}
+    	
     	super.handleROBOTDISMISS(mes);
     }
     
@@ -188,15 +201,33 @@ public class RlbotClient extends SOCRobotClient {
 //    	System.out.println("gamesPlayed: " + gamesPlayed + "; gamesPlayed % updateFrequency: " +
 //    			gamesPlayed % updateFrequency);    	
     	
-    	if ((gamesPlayed % updateFrequency)== (updateFrequency-1)) {
-        	memory.writeMemory(getNickname());     	 	
-        	
-        	/*DEBUG*/
-        	System.out.println("Memory saved");
-        } 
-//    	else if ((gamesPlayed % updateFrequency)== 0) {
-//        	memory.synchronize();
-//        }
+    	
+//    	if (port==8888) {
+//    		if ((gamesPlayed % updateFrequency)== 0) {
+//            	memory.synchronise(getNickname());     	 	
+//            	
+//            	/*DEBUG*/
+//            	System.out.println("Memory saved");
+//            	
+//            } else if ((gamesPlayed % updateFrequency*5)==1) {
+//            	memory.writeMemory(getNickname()+ "org" , true);
+//            } else if ((gamesPlayed % updateFrequency*5)==2) {
+//            	memory.synchroniseAcrossPlayers(getNickname());
+//            }
+//    		if ((gamesPlayed % 200)==0) {
+//    			memory.writeMemory(getNickname()+ "_" + gamesPlayed + "copy" , false);
+//    		}
+//    		
+//    	} else {
+//    		if ((gamesPlayed % updateFrequency)== (updateFrequency-1)) {
+//    			/*DEBUG*/
+//            	System.out.println("Memory saved");
+//            	
+//            	memory.writeMemory(getNickname(), true);   
+//			} else if ((gamesPlayed % updateFrequency)== 0) {
+//				memory.readMemory(nickname);
+//			}
+//    	}
 //    	   	
     	super.handleDELETEGAME(mes);
     }
