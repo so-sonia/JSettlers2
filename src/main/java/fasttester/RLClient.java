@@ -25,12 +25,17 @@ import soc.robot.SOCPossiblePiece;
 import soc.robot.SOCPossibleRoad;
 import soc.robot.rl.RLStrategyLookupTable;
 import soc.robot.rl.RLStrategyLookupTable_small;
+import soc.robot.rl.RLStrategyLookupTable_small_test;
 import soc.robot.rl.RLStrategyRandom;
 import soc.robot.rl.StateMemoryLookupTable;
 import soc.robot.rl.RLStrategy;
 
 public class RLClient {
 
+	public static final int RANDOM = 0;
+	public static final int TRAIN_LOOKUP_TABLE = 1;
+	public static final int TEST_LOOKUP_TABLE= 2;
+	
 	protected int playerNumber;
 	
 	protected String name;
@@ -40,6 +45,8 @@ public class RLClient {
 	protected SOCGame game;
 	
 	protected SOCPlayer ourPlayerData;
+	
+	protected int strategyType;
 	
 	/**
 	 * memory of states to synchronize between many games at the same time.
@@ -70,12 +77,19 @@ public class RLClient {
     
     protected int lastStartingRoadTowardsNode;
 	
-	public RLClient(int i) {
+	public RLClient(int i, int strategyType, int memoryType) {
 		playerNumber = i;
 		name = "rlbot" + i;
 		
 		/*update type if changed memory*/
 		this.memory = new StateMemoryLookupTable(i);
+		this.strategyType = strategyType;
+		
+		if (memoryType!=-1) {
+			if (strategyType==RLClient.TEST_LOOKUP_TABLE || strategyType==RLClient.TRAIN_LOOKUP_TABLE) {
+				memory.readMemory(getName()+ "_" + 25000);
+			}
+		}
 		
 	}
 	
@@ -95,7 +109,21 @@ public class RLClient {
 		
 		ourPlayerData = game.getPlayer(getName());
 		openingBuildStrategy = new OpeningBuildStrategy(game, ourPlayerData);
-		rlStrategy = new RLStrategyLookupTable_small(game, playerNumber, memory);
+		
+		switch (strategyType) {
+			case RLClient.RANDOM:
+				System.out.println("Random bot created number: " + playerNumber);
+				rlStrategy = new RLStrategyRandom(game, playerNumber, memory);
+				break;
+			case RLClient.TRAIN_LOOKUP_TABLE:
+				System.out.println("Train lookup table bot created number: " + playerNumber);
+				rlStrategy = new RLStrategyLookupTable_small(game, playerNumber, memory);
+				break;
+			case RLClient.TEST_LOOKUP_TABLE:
+				System.out.println("Test lookup table bot created number: " + playerNumber);
+				rlStrategy = new RLStrategyLookupTable_small_test(game, playerNumber, memory);
+				break;
+		}
 		moveRobber = null;
 		roadsToBuildCoord = null;
 		resourceChoices = new SOCResourceSet();
@@ -225,6 +253,14 @@ public class RLClient {
 	public void handleDEVCARDACTION(int pn, int ctype, int action)
     {
 		SOCPlayer player = game.getPlayer(pn);
+		
+//		/*DEBUG*/
+//		System.out.println("In pn" + playerNumber + " player" + pn + " action: " + action + " type: " + ctype +
+//				" dev cards before new: " + 
+//				player.getInventory().getByState(SOCInventory.NEW).size() +
+//				" playable: " + player.getInventory().getByState(SOCInventory.PLAYABLE).size() +
+//				" kept: " + player.getInventory().getByState(SOCInventory.KEPT).size()
+//				);
 
         switch (action)
         {
@@ -243,7 +279,15 @@ public class RLClient {
         case SOCDevCardAction.ADD_NEW:
             player.getInventory().addDevCard(1, SOCInventory.NEW, ctype);
             break;
-        }        
+        } 
+        
+//        /*DEBUG*/
+//		System.out.println("In pn" + playerNumber + " player" + pn + " action: " + action +  " type: " + ctype +
+//				" dev cards after new: " + 
+//				player.getInventory().getByState(SOCInventory.NEW).size() +
+//				" playable: " + player.getInventory().getByState(SOCInventory.PLAYABLE).size() +
+//				" kept: " + player.getInventory().getByState(SOCInventory.KEPT).size()
+//				);
     }
 	
 	public void handlePLAYERELEMENT(int pn, int action, int type, int amount) {
@@ -463,6 +507,7 @@ public class RLClient {
 	
 	public void memoryStats() {
 		memory.memoryStats();
+		memory.stats();
 	}
 	
 	public void handleEndGame(int winner) {

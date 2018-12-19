@@ -181,15 +181,17 @@ public class SOCState {
     		
     		for (Integer hexInt : hexes)
     	        {
-    				uniqueHexes.add(hexInt);
-    				int hex = hexInt.intValue();
+    				if (board.isHexOnLand(hexInt))
+    					uniqueHexes.add(hexInt);
+    	
+//    				int hex = hexInt.intValue();
     				
-    				if (hex == robberHex) {
+    				if (hexInt == robberHex) {
     					blockedByRobber = 1;
     					continue;
     				}
   			
-    	            final int resource = board.getHexTypeFromCoord(hex);
+    	            final int resource = board.getHexTypeFromCoord(hexInt);
     	            
     	            if ((resource >= SOCResourceConstants.CLAY) && (resource <= SOCResourceConstants.WOOD))
     	            {

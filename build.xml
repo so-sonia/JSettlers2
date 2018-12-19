@@ -60,6 +60,7 @@
   <!-- For startup arguments, see README or run client/server with -h -->
   <property name="client.class"   value="soc.client.SOCPlayerClient" />
   <property name="fast.class"   value="fasttester.BotServer" />
+  <property name="mem.class"   value="fasttester.MemoryChecker" />
   <property name="server.class"   value="soc.server.SOCServer" />
   <property name="main.class"     value="${client.class}" />
   <property name="i18neditor.class" value="net.nand.util.i18n.gui.PTEMain" />
@@ -98,6 +99,7 @@
   <property name="client.jar" value="${Name}.jar" />
   <property name="server.jar" value="${Name}Server.jar" />
   <property name="fast.jar" value="${Name}Fast.jar" />
+  <property name="mem.jar" value="${Name}MemoryCheck.jar" />
   <property name="test.jar"   value="${Name}Test.jar" /><!-- unused -->
   <property name="i18neditor.jar" value="PTE.jar" />
 
@@ -137,7 +139,10 @@
     <include name="resources/" />   <!-- images, strings, client may run local server -->
     <include name="soc/" />         <!-- thus, everything -->
     <include name="net/nand/util/i18n/mgr/" />         <!-- i18n string manager -->
-	<include name="fasttester" />  
+	<include name="fasttester/" />  
+  </patternset>
+  <patternset id="mem.files">
+	<include name="fasttester/" />  
   </patternset>
   <patternset id="i18neditor.files">
     <include name="net/nand/util/i18n/" />         <!-- i18n editor gui, string manager, parser/writer -->
@@ -276,6 +281,13 @@ pte.version = ${i18neditor.version}
         <patternset refid="fast.files" />
         <manifest>
           <attribute name="Main-Class" value="${fast.class}" />
+          <attribute name="Class-Path" value="${client.jar}" />
+        </manifest>
+      </jar>
+  	  <jar destfile="${target}/${mem.jar}" basedir="${classes}">
+        <patternset refid="mem.files" />
+        <manifest>
+          <attribute name="Main-Class" value="${mem.class}" />
         </manifest>
       </jar>
   </target>

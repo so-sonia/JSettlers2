@@ -34,7 +34,7 @@ public class SOCState_small extends SOCState {
 	public void updateDevCards(SOCPlayer pn) {	
 		int[] devCards = new int[2];
 		SOCInventory inventory = pn.getInventory();
-    	devCards[0] = inventory.getOld();
+    	devCards[0] = inventory.getTotal();
     	SOCPlayerState statepn = playersInfo.get(Integer.valueOf(pn.getPlayerNumber()));
     	statepn.setDevCards(devCards);
 	}
@@ -42,7 +42,7 @@ public class SOCState_small extends SOCState {
 	 public void updateMyDevCards(SOCPlayer pn) {
 		 int[] devCards = new int[2];
 		 SOCInventory inventory = pn.getInventory();
-	     devCards[0] = inventory.getOld();
+	     devCards[0] = inventory.getTotal();
 	   	 SOCPlayerState statepn = playersInfo.get(Integer.valueOf(pn.getPlayerNumber()));
 	   	 statepn.setDevCards(devCards);
 	 }

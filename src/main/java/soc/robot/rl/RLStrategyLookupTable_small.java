@@ -9,6 +9,7 @@ import java.util.Random;
 import java.util.stream.Collectors;
 
 import soc.game.SOCGame;
+import soc.game.SOCInventory;
 import soc.game.SOCPlayer;
 import soc.robot.rl.RLStrategy.CustomPair;
 
@@ -172,6 +173,21 @@ public class RLStrategyLookupTable_small extends RLStrategyLookupTable {
 	    		
 	    		oldPlayerStateValue = oldPlayerStateValue + alpha * (gamma * newPlayerStateValue - oldPlayerStateValue);
 	    		
+	    		/*DEBUG*/
+	    		if (ourPlayerData.getName().equals("rlbot0")) {
+//	    			System.out.println("-----------");
+	    			System.out.println("In pn" + ourPlayerNumber + ". player " 
+	    					+ pn.getPlayerNumber() + " state: " 
+	    					+ Arrays.toString(oldPlayerState.toArray()));
+		    		System.out.println("In pn" + ourPlayerNumber + ". player " 
+		    					+ pn.getPlayerNumber() + " state: " 
+		    					+ Arrays.toString(newPlayerState.toArray()));
+		    		System.out.println("new state val: " + newPlayerStateValue + 
+		    				" old state val: " + oldPlayerStateValue + " count: " + oldPlayerStateCount);
+		    		
+	    		}
+	    		
+	    		
 	    		memory.setState1Value(oldPlayerState, new Double[] {oldPlayerStateValue, ++oldPlayerStateCount});
 	    		oldState.put(pn, newPlayerState);
 	    		
@@ -256,11 +272,21 @@ public class RLStrategyLookupTable_small extends RLStrategyLookupTable {
 	    		
 	    		List<Integer> newPlayerState = Arrays.stream(state.getState(pn)).boxed().collect(Collectors.toList());
 	    		
-//	    		/*DEBUG*/
+	    		/*DEBUG*/
+//	    		System.out.println("-----------");
 //	    		System.out.println("In pn" + ourPlayerNumber + ". player " 
 //	    					+ pn.getPlayerNumber() + " state: " 
 //	    					+ Arrays.toString(newPlayerState.toArray()));
 //	    		pn.stats();
+//	    		int rob = board.getRobberHex();
+//	    		System.out.println("numbers: " + pn.getNumbers().toString() + " rob hex:" + rob + 
+//	    				" num: " + board.getNumberOnHexFromCoord(rob) + 
+//	    				" res:" + board.getHexTypeFromCoord(rob));
+//	    		System.out.println("dev cards new: " + 
+//	    				pn.getInventory().getByState(SOCInventory.NEW).size() +
+//	    				" playable: " + pn.getInventory().getByState(SOCInventory.PLAYABLE).size() +
+//	    				" kept: " + pn.getInventory().getByState(SOCInventory.KEPT).size()
+//	    				);
 	    		
 	    		if (winner == pn.getPlayerNumber()) {
 	    			reward = 1;
@@ -280,6 +306,20 @@ public class RLStrategyLookupTable_small extends RLStrategyLookupTable {
 	    		
 	    		memory.setState1Value(oldPlayerState, new Double[] {oldPlayerStateValue, ++oldPlayerStateCount});
 	    		oldState.put(pn, newPlayerState);
+	    		
+	    		/*DEBUG*/
+	    		if (ourPlayerData.getName().equals("rlbot0")) {
+	    			System.out.println("-----------");
+	    			System.out.println("In pn" + ourPlayerNumber + ". player " 
+	    					+ pn.getPlayerNumber() + " state: " 
+	    					+ Arrays.toString(oldPlayerState.toArray()));
+		    		System.out.println("In pn" + ourPlayerNumber + ". player " 
+		    					+ pn.getPlayerNumber() + " state: " 
+		    					+ Arrays.toString(newPlayerState.toArray()));
+		    		System.out.println("new state val: " + newPlayerStateValue + 
+		    				" old state val: " + oldPlayerStateValue + " count: " + oldPlayerStateCount);
+	    		}
+//	    		System.out.println("new state val: " + newPlayerStateValue + " old state val: " + oldPlayerStateValue);
 	    		
 	    		//calculation to get new state array
 	    		int points = pn.getTotalVP();

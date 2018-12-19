@@ -2277,11 +2277,11 @@ public class SOCGameHandler extends GameHandler
         SOCPlayer winPl = ga.getPlayer(ga.getCurrentPlayerNumber());
         
         /* code added by Sonia */
-        String gnameSer = srv.getName() + "_" + gname;
-        for (SOCPlayer pn : ga.getPlayers()) {
-        	pn.writeStats(gnameSer);        	
-        }
-        writeStats(ga, gnameSer);
+//        String gnameSer = srv.getName() + "_" + gname;
+//        for (SOCPlayer pn : ga.getPlayers()) {
+//        	pn.writeStats(gnameSer, "");        	
+//        }
+//        writeStats(ga, gnameSer);
         
 
         if ((winPl.getTotalVP() < ga.vp_winner) && ! ga.hasScenarioWinCondition)

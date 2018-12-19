@@ -4904,12 +4904,12 @@ public class SOCPlayer implements SOCDevCardConstants, Serializable, Cloneable
      *  write stats at the end of the game, callled by SOCGameHandler
      * @author Sonia
      */
-    public void writeStats(String gameName) {
+    public void writeStats(String gameName, String fileName) {
 		BufferedWriter writer = null;
         try {
         	/*STATS*/
 //        	Path path = Paths.get("log", "SE_RL_RND_stat.txt");
-        	Path path = Paths.get("SE_RL_RND_stat.txt");
+        	Path path = Paths.get(fileName);
             writer = new BufferedWriter(new FileWriter(path.toFile(), true));
             
             int[] ports = new int[6];
@@ -4936,7 +4936,7 @@ public class SOCPlayer implements SOCDevCardConstants, Serializable, Cloneable
         			+ getCities().size() + ", "
         			+ getRoadsAndShips().size() + ", "
         			+ res + ","
-        			+ portsString   
+        			+ portsString 
         			);
             writer.newLine();
                        
@@ -4958,6 +4958,35 @@ public class SOCPlayer implements SOCDevCardConstants, Serializable, Cloneable
 	
     }
     
+//    public void stats() {
+//    	int[] ports = new int[6];
+//    	boolean[] portFlags = getPortFlags();
+//    	
+//    	for (int i=0; i < ports.length; i++) {
+//    		ports[i] = portFlags[i] ? 1 : 0 ;
+//    	}
+//        String portsString = Arrays.toString(ports)
+//        		.replace("[", "").replace("]", "");
+//        String res = Arrays.toString(getResourceRollStats())
+//        		.replace("[", "").replace("]", "");
+//        
+//        String stats = getPlayerNumber() + ", " 
+//    			+ getName() + ", "
+////    			+ getRobotParameters().getStrategyType() + ", "
+//    			+ getTotalVP() + ", "
+//    			+ hasLargestArmy() + ", "
+//    			+ getNumKnights() + ", "
+//    			+ hasLongestRoad() + ", "
+//    			+ getInventory().getNumVPItems() + ", "
+//    			+ getSettlements().size() + ", "
+//    			+ getCities().size() + ", "
+//    			+ getRoadsAndShips().size() + ", "
+//    			+ res + ","
+//    			+ portsString;
+//        
+//        System.out.println(stats);
+//    }
+    
     public void stats() {
     	int[] ports = new int[6];
     	boolean[] portFlags = getPortFlags();
@@ -4971,20 +5000,39 @@ public class SOCPlayer implements SOCDevCardConstants, Serializable, Cloneable
         		.replace("[", "").replace("]", "");
         
         String stats = getPlayerNumber() + ", " 
-    			+ getName() + ", "
+    			+ " pt:" + getName() + ", "
 //    			+ getRobotParameters().getStrategyType() + ", "
-    			+ getTotalVP() + ", "
-    			+ hasLargestArmy() + ", "
-    			+ getNumKnights() + ", "
-    			+ hasLongestRoad() + ", "
-    			+ getInventory().getNumVPItems() + ", "
-    			+ getSettlements().size() + ", "
-    			+ getCities().size() + ", "
-    			+ getRoadsAndShips().size() + ", "
-    			+ res + ","
-    			+ portsString;
+    			+ " vp:" + getTotalVP() + ", "
+    			+ " lgrd: " + this.getLongestRoadLength() + ","
+    			+ " rd:" + getRoadsAndShips().size() + ", "
+    			+ " kng:" + getNumKnights() + ", "
+    			+ " LR:" + hasLongestRoad() + ", "
+    			+ " LA: " + hasLargestArmy() + ", "
+    			+ " card:" + getInventory().getNumVPItems() + ", "
+    			+ " set: " + getSettlements().size() + ", "
+    			+ " cit:" + getCities().size() + ", "
+    			+ " res: " + res + ","
+    			+ " ports: " + portsString;
+        
         
         System.out.println(stats);
     }
+    
+    
+//    result[0] = points;
+//	result[1] = uniqueAdjacentHexes;
+//	result[2] = uniqueNumbers;
+//	result[3] = longestRoad;
+//	result[4] = playedKnights;
+//	result[5] = hasLongestRoad;
+//	result[6] = hasLargestArmy;
+//	result[7] = blockedByRobber;
+//	result[8] = numberOfPotentialSettlements;
+//	result[9] = devCards[0];
+//	int i = 10;
+//	System.arraycopy(resourceProbabilities, 0, result, i, resourceProbabilities.length);
+//	i += resourceProbabilities.length;
+//	System.arraycopy(ports, 0, result, i, ports.length);
+//	i += ports.length;
 
 }

@@ -1,5 +1,6 @@
 package soc.robot.rl;
 
+import java.io.EOFException;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -12,6 +13,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.lang.Math;
 
 
 public class StateMemoryLookupTable  {
@@ -47,14 +49,20 @@ public class StateMemoryLookupTable  {
 //	}
 	
 	public void setState1Value(List<Integer> state, Double[] value) {
-		Double[] currentValueCount = statesOrg.get(state);
-		if (currentValueCount==null) {
-			statesOrg.put(state,   new Double[] {value[0], Double.valueOf(1.0)});
-		} else {
-			currentValueCount[1]++;
-			currentValueCount[0] = value[0];
-			statesOrg.put(state, currentValueCount);
-		}
+//		Double[] currentValueCount = states.get(state);
+//		if (currentValueCount==null) {
+//			statesOrg.put(state,   new Double[] {value[0], Double.valueOf(1.0)});
+//		} else {
+//			currentValueCount[1]++;
+//			currentValueCount[0] = value[0];
+//			statesOrg.put(state, currentValueCount);
+//		}
+//		if (port==0) {
+//			double val = value[0];
+//			double count = value[1];
+//			double s = val + count;
+//			double f = s;
+//		}
 		states.put(state,  value);
 	}
 	
@@ -64,14 +72,14 @@ public class StateMemoryLookupTable  {
 	}
 
 	public void setState2Value(List<Integer> state, Double[] value) {
-		Double[] currentValueCount = states2Org.get(state);
-		if (currentValueCount==null) {
-			states2Org.put(state,   new Double[] {value[0], Double.valueOf(1.0)});
-		} else {
-			currentValueCount[1]++;
-			currentValueCount[0] = value[0];
-			states2Org.put(state, currentValueCount);
-		}
+//		Double[] currentValueCount = states2Org.get(state);
+//		if (currentValueCount==null) {
+//			states2Org.put(state,   new Double[] {value[0], Double.valueOf(1.0)});
+//		} else {
+//			currentValueCount[1]++;
+//			currentValueCount[0] = value[0];
+//			states2Org.put(state, currentValueCount);
+//		}
 		states2.put(state,  value);
 	}
 		
@@ -80,22 +88,95 @@ public class StateMemoryLookupTable  {
 		new MemorySynchroniser(this, nickname).start();
 	 }
 	
-	public void readMemory(String nickname) {
-
-		new MemoryReader(this, nickname).start();
-
-	 }
+//	public void readMemory(String nickname) {
+//
+//		new MemoryReader(this, nickname).start();
+//
+//	 }
+//	
+	public void readMemory(String nick) {
+		 /*DEBUG*/
+		 System.out.println("reading memory");
+		 
+		 Path dir = Paths.get("RL_LT_" + nick + "_states_" + port);
+		 System.out.println("Reading from path: " + dir.toString());
+		 states = readPath(dir);
+			 
+		 /*DEBUGA*/
+        System.out.println(states.size() + " states read");
+			 
+        Path dir2 = Paths.get("RL_LT_" + nick + "_states2_" + port);
+        System.out.println("Reading from path: " + dir2.toString());
+        
+        /*TEST: should we leave synchronized or not*/
+        synchronized(states2) {
+       	 states2 = readPath(dir2);
+        }
+		 			 
+		 /*DEBUGA*/
+        System.out.println(states2.size() + " states2 read");
+	}
 	
 	public void synchroniseAcrossPlayers(String nickname) {
 		
 		new MemoryPlayerSynchroniser(this, nickname).start();
 	 }
 	 
-	 public void writeMemory(String nickname, boolean org) {
+	 public void writeMemory(String nick, boolean original) {
+		 /*DEBUGA*/
+		 System.out.println("writing memory");
 		 
-		 new MemorySaver(this, nickname, org).start();
+//		 Path path = Paths.get("memory", "RL_LT_" + nick + "_states_" + port); 
+		 Path path = Paths.get("RL_LT_" + nick + "_states_" + port); 
+		 
+		 if (!original) {
+			 writePath(path, states);
+			 /*DEBUGA*/
+	         System.out.println(states.size() + " states written");
+		 } else
+		 {
+			 writePath(path, statesOrg);
+			 /*DEBUGA*/
+	         System.out.println(statesOrg.size() + " statesOrg written");
+	         statesOrg=new HashMap<List<Integer>, Double[]>();
+		 }
+		 		 
+//		 /*DEBUG*/
+//        System.out.println("Serialized HashMap states data is saved in " + path.toString());
+//        System.out.println(states.size() + " states saved");
+//        states.forEach((key, value) -> System.out.println(
+//       		 Arrays.toString(key.toArray()) + " : " + Arrays.toString(value)));
+
+//        path = Paths.get("memory", "RL_LT_" + nick + "_states2_" + port); 
+        path = Paths.get("RL_LT_" + nick + "_states2_" + port); 
+        
+        if (!original) {
+			 writePath(path, states2);
+			 /*DEBUGA*/
+		     System.out.println(states2.size() + " states2 written");
+		 } else
+		 {
+			 writePath(path, states2Org);
+			 /*DEBUGA*/
+		     System.out.println(states2Org.size() + " states2Org written");
+		     states2Org=new HashMap<List<Integer>, Double[]>();
+		 }
+		        
+        
+//        /*DEBUG*/
+//        System.out.println("Serialized HashMap states2 data is saved in " + path.toString());
+//        System.out.println(states2.size() + " states2 saved");
+//        states2.forEach((key, value) -> System.out.println(
+//       		 Arrays.toString(key.toArray()) + " : " + Arrays.toString(value)));
+		 
 
 	 }
+	 
+//	 public void writeMemory(String nickname, boolean org) {
+//		 
+//		 new MemorySaver(this, nickname, org).start();
+//
+//	 }
 	
 	protected void writePath(Path path, HashMap<List<Integer>, Double[]> target){
 		 try
@@ -127,17 +208,33 @@ public class StateMemoryLookupTable  {
 	         map = (HashMap<List<Integer>, Double[]>) ois.readObject();
 	         ois.close();
 	         fis.close();
-	      }catch(IOException ioe)
+	      } catch(EOFException eof) {
+	    	  eof.printStackTrace();
+	    	  return map;
+	      } catch(IOException ioe)
 	      {
 	         ioe.printStackTrace();
 	         return null;
-	      }catch(ClassNotFoundException c)
+	      } 
+		 catch(ClassNotFoundException c)
 	      {
 	         System.out.println("Class not found");
 	         c.printStackTrace();
 	         return null;
 	      }
 		 return map;
+	 }
+	 
+	 public void stats() {
+		 /*DEBUG*/
+       System.out.println(states.size() + " states in memory");
+       states.forEach((key, value) -> 
+       			{
+       				System.out.println(Arrays.toString(value));
+       				if(Math.abs(value[0]-0)<1e-6 || Math.abs(value[0]-1)<1e-6) 
+       					System.out.println(
+       							Arrays.toString(key.toArray()) + " : " + Arrays.toString(value) ); 
+       					} );
 	 }
 	 
 	 class MemorySaver extends Thread {
@@ -320,7 +417,7 @@ public class StateMemoryLookupTable  {
 			 /*DEBUGA*/
 	         System.out.println(states.size() + " states read");
 				 
-	         Path dir2 = Paths.get("memory", "RL_LT_" + nick + "_states_8888");
+	         Path dir2 = Paths.get("memory", "RL_LT_" + nick + "_states2_8888");
 	         
 	         /*TEST: should we leave synchronized or not*/
 	         synchronized(states2) {
