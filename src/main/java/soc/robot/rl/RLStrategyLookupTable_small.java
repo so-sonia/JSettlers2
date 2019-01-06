@@ -14,12 +14,15 @@ import soc.game.SOCPlayer;
 import soc.robot.rl.RLStrategy.CustomPair;
 
 public class RLStrategyLookupTable_small extends RLStrategyLookupTable {
+	
+	int counter=0;
 
 	public RLStrategyLookupTable_small(SOCGame game, int pn, StateMemoryLookupTable memory) {
 		super(game, pn, memory);
 		
-		state = new SOCState_small(ourPlayerNumber, players);
-	    state.updateAll(players, board);      
+		/*RES MISSING*/
+		state = new SOCState(ourPlayerNumber, players);
+	    state.updateAll(players, board); 
 
         /* adding to memory the state at the beginning of the game */
 	    ArrayList<CustomPair> pn_states = new ArrayList<CustomPair>();
@@ -29,10 +32,10 @@ public class RLStrategyLookupTable_small extends RLStrategyLookupTable {
     	
 	    while (playersIter.hasNext()) {
 	    	SOCPlayer player = playersIter.next();
-    		List<Integer> playerState = Arrays.stream(state.getState(player)).boxed().collect(Collectors.toList());
+    		SOCStateArray playerState = new SOCStateArray(state.getState(player));
     		int points = player.getTotalVP();
-    		Double value = new Random().nextGaussian()*0.05 + 0.5; //or maybe random?
-    		memory.setState1Value(playerState, new Double[] {value, Double.valueOf(1.0)});
+    		Float value =  (float)(new Random().nextGaussian()*0.05 + 0.5); //or maybe random?
+    		memory.setState1Value(playerState, new Float[] {value, Float.valueOf(1)});
 			oldState.put(player, playerState);
     		
     		int state_value = Math.round(value.floatValue()*10);	
@@ -57,12 +60,13 @@ public class RLStrategyLookupTable_small extends RLStrategyLookupTable {
     		secondState[(i+1)*2 + 1] = pn_states.get(i).getValue().intValue();
     	}
     	
-    	Double value = new Random().nextGaussian()*0.05 + 0.5; //or maybe random?
-    	oldState2 = Arrays.stream(secondState).boxed().collect(Collectors.toList());
-    	memory.setState2Value(oldState2, new Double[] {value, Double.valueOf(1.0)});
+    	Float value =  (float)(new Random().nextGaussian()*0.05 + 0.5); //or maybe random?
+    	oldState2 = new SOCStateArray(secondState);
+    	memory.setState2Value(oldState2, new Float[] {value, Float.valueOf(1)});
 	}
 	
 	protected float getStateValue(SOCState tmpState) {
+		counter++;
     	ArrayList<CustomPair> pn_states = new ArrayList<CustomPair>();
     	int[] secondState = new int[8];
 
@@ -71,7 +75,7 @@ public class RLStrategyLookupTable_small extends RLStrategyLookupTable {
 	    while (playersIter.hasNext()) {
 	    	SOCPlayer pn = playersIter.next();
 	    	
-    		List<Integer> playerState = Arrays.stream(tmpState.getState(pn)).boxed().collect(Collectors.toList());
+    		SOCStateArray playerState = new SOCStateArray(tmpState.getState(pn));
     		
 //    		/*DEBUG*/
 //    		System.out.println("In pn" + ourPlayerNumber + ". player " 
@@ -80,11 +84,12 @@ public class RLStrategyLookupTable_small extends RLStrategyLookupTable {
 //    		pn.stats();
     		
     		int points = pn.getTotalVP();
-    		Double value = null;
-    		Double[] valueCount = memory.getState1Value(playerState);
+    		Float value = null;
+    		Float[] valueCount = memory.getState1Value(playerState);
     		if (valueCount==null) {
-    			value = new Random().nextGaussian()*0.05 + 0.5;
-    			memory.setState1Value(playerState, new Double[] {value, Double.valueOf(1.0)});
+    			value = (float)(new Random().nextGaussian()*0.05 + 0.5);
+    			/*NO SINGLE STATES in memory*/
+    			memory.setState1Value(playerState, new Float[] {value, Float.valueOf(1)});
     		} else {
     			value = valueCount[0];
     		}
@@ -115,13 +120,14 @@ public class RLStrategyLookupTable_small extends RLStrategyLookupTable {
 //		System.out.println("In pn" + ourPlayerNumber + " state2: " 
 //					+ Arrays.toString(secondState));
     	
-    	List<Integer> secondStateList = Arrays.stream(secondState).boxed().collect(Collectors.toList());
+    	SOCStateArray secondStateList = new SOCStateArray(secondState);
     	
-    	Double value = null;
-    	Double[] valueCount = memory.getState2Value(secondStateList);
+    	Float value = null;
+    	Float[] valueCount = memory.getState2Value(secondStateList);
 		if (valueCount==null) {
-			value = new Random().nextGaussian()*0.05 + 0.5; //or maybe random?
-			memory.setState2Value(secondStateList, new Double[] {value, Double.valueOf(1.0)});
+			value = (float)(new Random().nextGaussian()*0.05 + 0.5); //or maybe random?
+			/*NO SINGLE STATES in memory*/
+			memory.setState2Value(secondStateList, new Float[] {value, Float.valueOf(1)});
 		} else {
 			value = valueCount[0];
 		}
@@ -139,56 +145,56 @@ public class RLStrategyLookupTable_small extends RLStrategyLookupTable {
 	    	
 		    while (playersIter.hasNext()) {
 		    	SOCPlayer pn = playersIter.next();
-	    		List<Integer> oldPlayerState = oldState.get(pn);
+	    		SOCStateArray oldPlayerState = oldState.get(pn);
 	    		
-	    		Double[] oldPlayerStateValueCount = memory.getState1Value(oldPlayerState);
-	    		Double oldPlayerStateValue = null;
-	    		Double oldPlayerStateCount = Double.valueOf(1.0);
+	    		Float[] oldPlayerStateValueCount = memory.getState1Value(oldPlayerState);
+	    		Float oldPlayerStateValue = null;
+	    		Float oldPlayerStateCount = Float.valueOf(1);
 	    		/*obvious mistake, should never be null, but error sometimes thrown*/
 	    		if (oldPlayerStateValueCount==null) {
-	    			oldPlayerStateValue = new Random().nextGaussian()*0.05 + 0.5; //or maybe random?
-	    			memory.setState1Value(oldPlayerState, new Double[] {oldPlayerStateValue, Double.valueOf(1.0)});
+	    			oldPlayerStateValue = (float)(new Random().nextGaussian()*0.05 + 0.5); //or maybe random?
+	    			memory.setState1Value(oldPlayerState, new Float[] {oldPlayerStateValue, Float.valueOf(1)});
 	    		} else {
 	    			oldPlayerStateValue = oldPlayerStateValueCount[0];
 	    			oldPlayerStateCount = oldPlayerStateValueCount[1];
 	    		}
 	    		
-	    		List<Integer> newPlayerState = Arrays.stream(state.getState(pn)).boxed().collect(Collectors.toList());
+	    		SOCStateArray newPlayerState = new SOCStateArray(state.getState(pn));
 	    		
 //	    		/*DEBUG*/
 //	    		System.out.println("In pn" + ourPlayerNumber + ". player " 
 //	    					+ pn.getPlayerNumber() + " state: " 
-//	    					+ Arrays.toString(newPlayerState.toArray()));
+//	    					+ newPlayerState.toString());
 //	    		pn.stats();
 	    		
 	    		
-	    		Double newPlayerStateValue = null;
-	    		Double[] newPlayerStateValueCount = memory.getState1Value(newPlayerState);
+	    		Float newPlayerStateValue = null;
+	    		Float[] newPlayerStateValueCount = memory.getState1Value(newPlayerState);
 	    		if (newPlayerStateValueCount==null) {
-	    			newPlayerStateValue = new Random().nextGaussian()*0.05 + 0.5; //or maybe random?
-	    			memory.setState1Value(newPlayerState, new Double[] {newPlayerStateValue, Double.valueOf(1.0)});
+	    			newPlayerStateValue = (float)(new Random().nextGaussian()*0.05 + 0.5); //or maybe random?
+	    			memory.setState1Value(newPlayerState, new Float[] {newPlayerStateValue, Float.valueOf(1)});
 	    		} else {
 	    			newPlayerStateValue = newPlayerStateValueCount[0];
 	    		}
 	    		
-	    		oldPlayerStateValue = oldPlayerStateValue + alpha * (gamma * newPlayerStateValue - oldPlayerStateValue);
+	    		oldPlayerStateValue = (float)(oldPlayerStateValue + alpha * (gamma * newPlayerStateValue - oldPlayerStateValue));
 	    		
-	    		/*DEBUG*/
-	    		if (ourPlayerData.getName().equals("rlbot0")) {
-//	    			System.out.println("-----------");
-	    			System.out.println("In pn" + ourPlayerNumber + ". player " 
-	    					+ pn.getPlayerNumber() + " state: " 
-	    					+ Arrays.toString(oldPlayerState.toArray()));
-		    		System.out.println("In pn" + ourPlayerNumber + ". player " 
-		    					+ pn.getPlayerNumber() + " state: " 
-		    					+ Arrays.toString(newPlayerState.toArray()));
-		    		System.out.println("new state val: " + newPlayerStateValue + 
-		    				" old state val: " + oldPlayerStateValue + " count: " + oldPlayerStateCount);
-		    		
-	    		}
+//	    		/*DEBUG*/
+//	    		if (ourPlayerData.getName().equals("rlbot0")) {
+////	    			System.out.println("-----------");
+//	    			System.out.println("In pn" + ourPlayerNumber + ". player " 
+//	    					+ pn.getPlayerNumber() + " state: " 
+//	    					+ oldPlayerState.toString());
+//		    		System.out.println("In pn" + ourPlayerNumber + ". player " 
+//		    					+ pn.getPlayerNumber() + " state: " 
+//		    					+ newPlayerState.toString());
+//		    		System.out.println("new state val: " + newPlayerStateValue + 
+//		    				" old state val: " + oldPlayerStateValue + " count: " + oldPlayerStateCount);
+//		    		
+//	    		}
 	    		
 	    		
-	    		memory.setState1Value(oldPlayerState, new Double[] {oldPlayerStateValue, ++oldPlayerStateCount});
+	    		memory.setState1Value(oldPlayerState, new Float[] {oldPlayerStateValue, ++oldPlayerStateCount});
 	    		oldState.put(pn, newPlayerState);
 	    		
 	    		//calculation to get new state array
@@ -212,36 +218,36 @@ public class RLStrategyLookupTable_small extends RLStrategyLookupTable {
 	    		newState[(i+1)*2] = pn_states.get(i).getKey().intValue();
 	    		newState[(i+1)*2 + 1] = pn_states.get(i).getValue().intValue();
 	    	}
-	    	List<Integer> newStateList = Arrays.stream(newState).boxed().collect(Collectors.toList());
+	    	SOCStateArray newStateList = new SOCStateArray(newState);
 	    	
-//	    	/*DEBUG*/
+	    	/*DEBUG*/
 //    		System.out.println("In pn" + ourPlayerNumber + " state2: " 
-//    					+ Arrays.toString(newStateList.toArray()));	    	
+//    					+ newStateList.toString());	    	
 	    	
-	    	Double newStateValue = null;
-	    	Double[] newStateValueCount = memory.getState2Value(newStateList);
+	    	Float newStateValue = null;
+	    	Float[] newStateValueCount = memory.getState2Value(newStateList);
 			if (newStateValueCount==null) {
-//				newStateValue = Double.valueOf(0.5); //or maybe random?
-				newStateValue = new Random().nextGaussian()*0.05 + 0.5;
-				memory.setState2Value(newStateList, new Double[] {newStateValue, Double.valueOf(1.0)});
+//				newStateValue = Float.valueOf(0.5); //or maybe random?
+				newStateValue = (float)(new Random().nextGaussian()*0.05 + 0.5);
+				memory.setState2Value(newStateList, new Float[] {newStateValue, Float.valueOf(1)});
 			} else {
 				newStateValue = newStateValueCount[0];
 			}
 	    	
-			Double oldStateValue = null;
-			Double oldStateCount = Double.valueOf(1.0);
-			Double[] oldStateValueCount = memory.getState2Value(oldState2);
+			Float oldStateValue = null;
+			Float oldStateCount = Float.valueOf(1);
+			Float[] oldStateValueCount = memory.getState2Value(oldState2);
 			if (oldStateValueCount==null) {
-				oldStateValue = new Random().nextGaussian()*0.05 + 0.5;
+				oldStateValue = (float)(new Random().nextGaussian()*0.05 + 0.5);
 			} else {
 				oldStateValue = oldStateValueCount[0];
 				oldStateCount = oldStateValueCount[1];	
 			}
 
 	    	
-	    	oldStateValue = oldStateValue + alpha * (gamma * newStateValue  - oldStateValue);
+	    	oldStateValue = (float)(oldStateValue + alpha * (gamma * newStateValue  - oldStateValue));
 	    	
-	    	memory.setState2Value(oldState2, new Double[] {oldStateValue, ++oldStateCount});
+	    	memory.setState2Value(oldState2, new Float[] {oldStateValue, ++oldStateCount});
 	    	oldState2 = newStateList;	    	
 	    	currentStateValue = newStateValue;
 	    }
@@ -256,27 +262,27 @@ public class RLStrategyLookupTable_small extends RLStrategyLookupTable {
 	    	
 		    while (playersIter.hasNext()) {
 		    	SOCPlayer pn = playersIter.next();
-	    		List<Integer> oldPlayerState = oldState.get(pn);
+	    		SOCStateArray oldPlayerState = oldState.get(pn);
 
-	    		Double[] oldPlayerStateValueCount = memory.getState1Value(oldPlayerState);
-	    		Double oldPlayerStateValue = null;
-	    		Double oldPlayerStateCount = Double.valueOf(1.0);
+	    		Float[] oldPlayerStateValueCount = memory.getState1Value(oldPlayerState);
+	    		Float oldPlayerStateValue = null;
+	    		Float oldPlayerStateCount = Float.valueOf(1);
 	    		/*obvious mistake, should never be null, but error sometimes thrown*/
 	    		if (oldPlayerStateValueCount==null) {
-	    			oldPlayerStateValue = new Random().nextGaussian()*0.05 + 0.5; //or maybe random?
-	    			memory.setState1Value(oldPlayerState, new Double[] {oldPlayerStateValue, Double.valueOf(1.0)});
+	    			oldPlayerStateValue = (float)(new Random().nextGaussian()*0.05 + 0.5); //or maybe random?
+	    			memory.setState1Value(oldPlayerState, new Float[] {oldPlayerStateValue, Float.valueOf(1)});
 	    		} else {
 	    			oldPlayerStateValue = oldPlayerStateValueCount[0];
 	    			oldPlayerStateCount = oldPlayerStateValueCount[1];
 	    		}
 	    		
-	    		List<Integer> newPlayerState = Arrays.stream(state.getState(pn)).boxed().collect(Collectors.toList());
+	    		SOCStateArray newPlayerState = new SOCStateArray(state.getState(pn));
 	    		
-	    		/*DEBUG*/
+//	    		/*DEBUG*/
 //	    		System.out.println("-----------");
 //	    		System.out.println("In pn" + ourPlayerNumber + ". player " 
 //	    					+ pn.getPlayerNumber() + " state: " 
-//	    					+ Arrays.toString(newPlayerState.toArray()));
+//	    					+ newPlayerState.toString());
 //	    		pn.stats();
 //	    		int rob = board.getRobberHex();
 //	    		System.out.println("numbers: " + pn.getNumbers().toString() + " rob hex:" + rob + 
@@ -294,31 +300,31 @@ public class RLStrategyLookupTable_small extends RLStrategyLookupTable {
 	    			reward = 0;
 	    		}
 	    		
-	    		Double newPlayerStateValue = Double.valueOf(reward);
-	    		Double[] newPlayerStateValueCount = memory.getState1Value(newPlayerState);
+	    		Float newPlayerStateValue = Float.valueOf(reward);
+	    		Float[] newPlayerStateValueCount = memory.getState1Value(newPlayerState);
 	    		if (newPlayerStateValueCount==null) {
-	    			memory.setState1Value(newPlayerState, new Double[] {newPlayerStateValue, Double.valueOf(1.0)});
+	    			memory.setState1Value(newPlayerState, new Float[] {newPlayerStateValue, Float.valueOf(1)});
 	    		} else {
-	    			memory.setState1Value(newPlayerState, new Double[] {newPlayerStateValue, ++newPlayerStateValueCount[1]});
+	    			memory.setState1Value(newPlayerState, new Float[] {newPlayerStateValue, ++newPlayerStateValueCount[1]});
 	    		}
 	    		
-	    		oldPlayerStateValue = oldPlayerStateValue + alpha * (gamma * newPlayerStateValue - oldPlayerStateValue);
+	    		oldPlayerStateValue = (float)(oldPlayerStateValue + alpha * (gamma * newPlayerStateValue - oldPlayerStateValue));
 	    		
-	    		memory.setState1Value(oldPlayerState, new Double[] {oldPlayerStateValue, ++oldPlayerStateCount});
+	    		memory.setState1Value(oldPlayerState, new Float[] {oldPlayerStateValue, ++oldPlayerStateCount});
 	    		oldState.put(pn, newPlayerState);
 	    		
-	    		/*DEBUG*/
-	    		if (ourPlayerData.getName().equals("rlbot0")) {
-	    			System.out.println("-----------");
-	    			System.out.println("In pn" + ourPlayerNumber + ". player " 
-	    					+ pn.getPlayerNumber() + " state: " 
-	    					+ Arrays.toString(oldPlayerState.toArray()));
-		    		System.out.println("In pn" + ourPlayerNumber + ". player " 
-		    					+ pn.getPlayerNumber() + " state: " 
-		    					+ Arrays.toString(newPlayerState.toArray()));
-		    		System.out.println("new state val: " + newPlayerStateValue + 
-		    				" old state val: " + oldPlayerStateValue + " count: " + oldPlayerStateCount);
-	    		}
+//	    		/*DEBUG*/
+//	    		if (ourPlayerData.getName().equals("rlbot0")) {
+//	    			System.out.println("-----------");
+//	    			System.out.println("In pn" + ourPlayerNumber + ". player " 
+//	    					+ pn.getPlayerNumber() + " state: " 
+//	    					+ oldPlayerState.toString());
+//		    		System.out.println("In pn" + ourPlayerNumber + ". player " 
+//		    					+ pn.getPlayerNumber() + " state: " 
+//		    					+ newPlayerState.toString());
+//		    		System.out.println("new state val: " + newPlayerStateValue + 
+//		    				" old state val: " + oldPlayerStateValue + " count: " + oldPlayerStateCount);
+//	    		}
 //	    		System.out.println("new state val: " + newPlayerStateValue + " old state val: " + oldPlayerStateValue);
 	    		
 	    		//calculation to get new state array
@@ -343,7 +349,7 @@ public class RLStrategyLookupTable_small extends RLStrategyLookupTable {
 	    		newState[(i+1)*2] = pn_states.get(i).getKey().intValue();
 	    		newState[(i+1)*2 + 1] = pn_states.get(i).getValue().intValue();
 	    	}
-	    	List<Integer> newStateList = Arrays.stream(newState).boxed().collect(Collectors.toList());
+	    	SOCStateArray newStateList = new SOCStateArray(newState);
 	    	
 //	    	/*DEBUG*/
 //    		System.out.println("In pn" + ourPlayerNumber + " state2: " 
@@ -354,27 +360,27 @@ public class RLStrategyLookupTable_small extends RLStrategyLookupTable {
     		} else {
     			reward = 0;
     		}
-	    	Double newStateValue = Double.valueOf(reward);
-	    	Double[] newStateValueCount = memory.getState2Value(newStateList);
+	    	Float newStateValue = Float.valueOf(reward);
+	    	Float[] newStateValueCount = memory.getState2Value(newStateList);
 			if (newStateValueCount==null) {
-				memory.setState2Value(newStateList, new Double[] {newStateValue, Double.valueOf(1.0)});
+				memory.setState2Value(newStateList, new Float[] {newStateValue, Float.valueOf(1)});
 			} else {
-				memory.setState2Value(newStateList, new Double[] {newStateValue, ++newStateValueCount[1]});
+				memory.setState2Value(newStateList, new Float[] {newStateValue, ++newStateValueCount[1]});
 			}
 
-			Double oldStateValue = null;
-			Double oldStateCount = Double.valueOf(1.0);
-			Double[] oldStateValueCount = memory.getState2Value(oldState2);
+			Float oldStateValue = null;
+			Float oldStateCount = Float.valueOf(1);
+			Float[] oldStateValueCount = memory.getState2Value(oldState2);
 			if (oldStateValueCount==null) {
-				oldStateValue = new Random().nextGaussian()*0.05 + 0.5;
+				oldStateValue = (float)(new Random().nextGaussian()*0.05 + 0.5);
 			} else {
 				oldStateValue = oldStateValueCount[0];
 				oldStateCount = oldStateValueCount[1];	
 			}
 
-	    	oldStateValue = oldStateValue + alpha * (gamma * newStateValue  - oldStateValue);
+	    	oldStateValue = (float)(oldStateValue + alpha * (gamma * newStateValue  - oldStateValue));
 	    	
-	    	memory.setState2Value(oldState2, new Double[] {oldStateValue, ++oldStateCount});
+	    	memory.setState2Value(oldState2, new Float[] {oldStateValue, ++oldStateCount});
 	   }
 	 
 	 public void updateReward() {
@@ -397,6 +403,10 @@ public class RLStrategyLookupTable_small extends RLStrategyLookupTable {
 	 
 	 public void updateReward(int winner) {
 		 updateStateValue(winner);
+	 }
+	 
+	 public void printCounter() {
+		 System.out.println("In pn" + ourPlayerNumber + " counter: " + counter);
 	 }
 
 }

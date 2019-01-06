@@ -4909,7 +4909,7 @@ public class SOCPlayer implements SOCDevCardConstants, Serializable, Cloneable
         try {
         	/*STATS*/
 //        	Path path = Paths.get("log", "SE_RL_RND_stat.txt");
-        	Path path = Paths.get(fileName);
+        	Path path = Paths.get(fileName+ ".txt");
             writer = new BufferedWriter(new FileWriter(path.toFile(), true));
             
             int[] ports = new int[6];
@@ -4996,8 +4996,8 @@ public class SOCPlayer implements SOCDevCardConstants, Serializable, Cloneable
     	}
         String portsString = Arrays.toString(ports)
         		.replace("[", "").replace("]", "");
-        String res = Arrays.toString(getResourceRollStats())
-        		.replace("[", "").replace("]", "");
+//        String res = Arrays.toString(getResourceRollStats())
+//        		.replace("[", "").replace("]", "");
         
         String stats = getPlayerNumber() + ", " 
     			+ " pt:" + getName() + ", "
@@ -5011,7 +5011,7 @@ public class SOCPlayer implements SOCDevCardConstants, Serializable, Cloneable
     			+ " card:" + getInventory().getNumVPItems() + ", "
     			+ " set: " + getSettlements().size() + ", "
     			+ " cit:" + getCities().size() + ", "
-    			+ " res: " + res + ","
+    			+ resources.toShortString() + ","
     			+ " ports: " + portsString;
         
         

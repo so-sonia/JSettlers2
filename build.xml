@@ -143,6 +143,7 @@
   </patternset>
   <patternset id="mem.files">
 	<include name="fasttester/" />  
+  	<include name="soc/" /> 
   </patternset>
   <patternset id="i18neditor.files">
     <include name="net/nand/util/i18n/" />         <!-- i18n editor gui, string manager, parser/writer -->

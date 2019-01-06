@@ -30,7 +30,7 @@ public class RLStrategyRandom extends RLStrategy {
 //			state.updateResources(opp, true);
 //		}		
 		state.updateAll(players, board);
-		currentStateValue = new Random().nextGaussian()*0.05 + 0.5;
+		currentStateValue = (float)(new Random().nextGaussian()*0.05 + 0.5);
 	}
 
 //	@Override

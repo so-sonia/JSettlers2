@@ -1,3 +1,7 @@
+/*
+ * other classes use: resources and resource probabilities
+ */
+
 package soc.robot.rl;
 
 import java.util.Arrays;
@@ -143,6 +147,50 @@ public class SOCPlayerState{
 	public void substractPoints(int points) {
 		this.points -= points;
 	}
+	
+	/*added just not to make new object for Player State*/
+	public int getResMissingCity() {
+		return 0;
+	}
+
+	public void setResMissingCity(int resMissingCity) {
+	}
+
+	public int getResMissingSettlement() {
+		return 0;
+	}
+
+	public void setResMissingSettlement(int resMissingSettlement) {
+	}
+
+	public int getResMissingRoad() {
+		return 0;
+	}
+
+	public void setResMissingRoad(int resMissingRoad) {
+	}
+
+	public int getResMissingDevCard() {
+		return 0;
+	}
+
+	public void setResMissingDevCard(int resMissingDevCard) {
+	}
+
+	public int getCardsMissingLA() {
+		return 0;
+	}
+
+	public void setCardsMissingLA(int cardsMissingLA) {
+	}
+
+	public int getRoadsMissngLR() {
+		return 0;
+	}
+
+	public void setRoadsMissngLR(int roadsMissngLR) {
+	}
+	
 	/**For now length of the array that will be created by the state is calculated by hand.
 	 * TO DO: automate it, so it won't be necessary to update it every time that state will be changing. 
 	 * @return
@@ -179,5 +227,6 @@ public class SOCPlayerState{
 		i += ports.length;
 		return result;
 	}
+	
 }
 

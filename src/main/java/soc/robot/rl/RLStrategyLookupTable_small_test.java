@@ -14,11 +14,16 @@ public class RLStrategyLookupTable_small_test extends RLStrategyLookupTable_smal
 	@Override
 	protected void updateStateValue() {
 		state.updateAll(players, board);
-		currentStateValue = Double.valueOf(getStateValue(state));
+		currentStateValue = Float.valueOf(getStateValue(state));
 	}
 	
 	@Override
 	public void updateReward() {
 	}
+	
+	@Override
+	public void updateReward(int winner) {
+	}
+
 
 }

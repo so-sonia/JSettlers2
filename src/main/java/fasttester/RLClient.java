@@ -26,6 +26,7 @@ import soc.robot.SOCPossibleRoad;
 import soc.robot.rl.RLStrategyLookupTable;
 import soc.robot.rl.RLStrategyLookupTable_small;
 import soc.robot.rl.RLStrategyLookupTable_small_test;
+import soc.robot.rl.RLStrategyLookupTable_test;
 import soc.robot.rl.RLStrategyRandom;
 import soc.robot.rl.StateMemoryLookupTable;
 import soc.robot.rl.RLStrategy;
@@ -77,6 +78,32 @@ public class RLClient {
     
     protected int lastStartingRoadTowardsNode;
 	
+    public RLClient(int i, int strategyType, int memoryType, StateMemoryLookupTable memory) {
+    	if (memory==null) {
+    		this.memory = new StateMemoryLookupTable(i);
+    	} else {
+    		this.memory = memory;
+    	}    
+    	
+    	playerNumber = i;
+		name = "rlbot" + i;
+		this.strategyType = strategyType;
+		
+		/*DEBUGA*/
+		switch (strategyType) {
+		case RLClient.RANDOM:
+			System.out.println("Random bot created number: " + playerNumber);
+			break;
+		case RLClient.TRAIN_LOOKUP_TABLE:
+			System.out.println("Train lookup table bot created number: " + playerNumber);
+			break;
+		case RLClient.TEST_LOOKUP_TABLE:
+			System.out.println("Test lookup table bot created number: " + playerNumber);
+			break;
+		}
+		
+    }
+    
 	public RLClient(int i, int strategyType, int memoryType) {
 		playerNumber = i;
 		name = "rlbot" + i;
@@ -87,8 +114,21 @@ public class RLClient {
 		
 		if (memoryType!=-1) {
 			if (strategyType==RLClient.TEST_LOOKUP_TABLE || strategyType==RLClient.TRAIN_LOOKUP_TABLE) {
-				memory.readMemory(getName()+ "_" + 25000);
+				memory.readMemory(getName()+ "_" + memoryType);
 			}
+		}
+		
+		/*DEBUGA*/
+		switch (strategyType) {
+		case RLClient.RANDOM:
+			System.out.println("Random bot created number: " + playerNumber);
+			break;
+		case RLClient.TRAIN_LOOKUP_TABLE:
+			System.out.println("Train lookup table bot created number: " + playerNumber);
+			break;
+		case RLClient.TEST_LOOKUP_TABLE:
+			System.out.println("Test lookup table bot created number: " + playerNumber);
+			break;
 		}
 		
 	}
@@ -112,15 +152,15 @@ public class RLClient {
 		
 		switch (strategyType) {
 			case RLClient.RANDOM:
-				System.out.println("Random bot created number: " + playerNumber);
+//				System.out.println("Random bot created number: " + playerNumber);
 				rlStrategy = new RLStrategyRandom(game, playerNumber, memory);
 				break;
 			case RLClient.TRAIN_LOOKUP_TABLE:
-				System.out.println("Train lookup table bot created number: " + playerNumber);
+//				System.out.println("Train lookup table bot created number: " + playerNumber);
 				rlStrategy = new RLStrategyLookupTable_small(game, playerNumber, memory);
 				break;
 			case RLClient.TEST_LOOKUP_TABLE:
-				System.out.println("Test lookup table bot created number: " + playerNumber);
+//				System.out.println("Test lookup table bot created number: " + playerNumber);
 				rlStrategy = new RLStrategyLookupTable_small_test(game, playerNumber, memory);
 				break;
 		}
@@ -507,12 +547,19 @@ public class RLClient {
 	
 	public void memoryStats() {
 		memory.memoryStats();
-		memory.stats();
+//		memory.stats();
 	}
 	
 	public void handleEndGame(int winner) {
 		rlStrategy.updateReward(winner);
 	}
-
+	
+	public void changeLR(double alpha) {
+		rlStrategy.changeLR(alpha);
+	}
+	
+	public StateMemoryLookupTable getMemory() {
+		return memory;
+	}
 
 }

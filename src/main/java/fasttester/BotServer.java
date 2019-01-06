@@ -1,9 +1,11 @@
 package fasttester;
 /*
- * TODO: delete states visited single time
- * TODO: decrease memory of state size: change Double to Float, change object Integer[] to new
+ * [done]: delete states visited single time
+ * [done]: decrease memory of state size: change Double to Float, change object Integer[] to new
  * object with int[];
- * print memory every end for 0 and 1 values
+ * [done]: -dev cards na razie dla obu bierze takie same => zamień u innych na get total, 
+ *       inaczej nie widać, że w ostatnim kroku coś kupił, a dla innych i tak zamienia, 
+ *       bo koniec ich kolejki
  */
 
 import java.io.BufferedWriter;
@@ -41,8 +43,10 @@ import soc.game.SOCSettlement;
 import soc.message.SOCDevCardAction;
 import soc.message.SOCPlayerElement;
 import soc.robot.rl.RLStrategy;
+import soc.robot.rl.RLStrategyLookupTable_small;
 import soc.robot.rl.SOCState;
 import soc.robot.rl.SOCState_small;
+import soc.robot.rl.StateMemoryLookupTable;
 
 
 public class BotServer {
@@ -72,11 +76,13 @@ public class BotServer {
     
     HashMap<Integer,SOCPlayer> playersState;
     
-    protected SOCState state;
+//    protected SOCState state;
     
     String gameType;
     
     int memoryType;
+    
+    StateMemoryLookupTable memory;
 	
 	public BotServer(String name, int games, int syn, String gameType, int memoryType) {
 		this.name = name;
@@ -89,7 +95,9 @@ public class BotServer {
 		gamesPlayed = 0;
 		DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
 		Date date = new Date();
-		fileName = dateFormat.format(date) + "_" + gameType;
+		fileName = dateFormat.format(date) + "_" + gameType + "_stat";
+		System.out.println(gameType);
+		System.out.println(fileName);
 		
 //		startTime = System.currentTimeMillis();
 //        numberOfGamesStarted = 0;
@@ -100,14 +108,22 @@ public class BotServer {
 	public void createPlayers() {
 		players = new RLClient[4];
 		
+		/*SHARED memory*/
+		this.memory = new StateMemoryLookupTable(0);
+		if (memoryType!=-1) {
+			memory.readMemory("" + memoryType);
+		}
+		/*END SHARED memory*/
+				
 		if (gameType.equals("testRandom")) {
-			players[0] = new RLClient(0, RLClient.TRAIN_LOOKUP_TABLE, memoryType);
-			players[1] = new RLClient(1, RLClient.TRAIN_LOOKUP_TABLE, memoryType);
+			players[0] = new RLClient(0, RLClient.TEST_LOOKUP_TABLE, memoryType, players[0].getMemory());
+//			players[0] = new RLClient(0, RLClient.TEST_LOOKUP_TABLE, memoryType);
+			players[1] = new RLClient(1, RLClient.RANDOM, memoryType);
 			players[2] = new RLClient(2, RLClient.RANDOM, memoryType);
 			players[3] = new RLClient(3, RLClient.RANDOM, memoryType);
 		} else {
 			for (int i=0; i<players.length; i++) {
-				players[i] = new RLClient(i, RLClient.TRAIN_LOOKUP_TABLE, memoryType);
+				players[i] = new RLClient(i, RLClient.TRAIN_LOOKUP_TABLE, memoryType, memory);
 			}
 		}
 		
@@ -121,7 +137,7 @@ public class BotServer {
         	String gaName = "~botsOnly~" + remainingGames;
         	startGame(gaName);
         	remainingGames--;
-        	gamesPlayed++;
+        	gamesPlayed++;        	
 		}
 		
 		Date now =  new Date();
@@ -129,6 +145,7 @@ public class BotServer {
         final long gameMinutes = gameSeconds / 60L;
         gameSeconds = gameSeconds % 60L;
          
+//        players[0].memoryStats();
 		System.out.println("TIME ELAPSED: " + gameMinutes + " minutes " + gameSeconds + " seconds.");
 	}
 	
@@ -139,11 +156,11 @@ public class BotServer {
 		// set the expiration to 90 min. from now
         //game.setExpiration(game.getStartTime().getTime() + (60 * 1000 * GAME_TIME_EXPIRE_MINUTES));
 		
-		currentGame.isBotsOnly = true;
-		playersGameOrder = new RLClient[4];
-		
 		/*DEBUGA*/
 		System.out.println("Started bot-only game: " + name);
+		
+		currentGame.isBotsOnly = true;
+		playersGameOrder = new RLClient[4];
 		
 		currentGame.setGameState(SOCGame.READY);
 		
@@ -205,8 +222,8 @@ public class BotServer {
 			playersState.put(new Integer(i), currentGame.getPlayer(i));
 		}
 		  
-		state = new SOCState_small(-1, playersState);
-	    state.updateAll(playersState, board);   
+//		state = new SOCState_small(-1, playersState);
+//	    state.updateAll(playersState, board);   
 		
 		sendGameSate();
 		/*maybe we should send not played dev card=> but setting initial settlements probably dont need it*/
@@ -230,7 +247,65 @@ public class BotServer {
 			winner = pn.getPlayerNumber();
 		for(int i =0; i<players.length; i++) {
 			players[i].handleEndGame(winner);
+			
+			/*DEBUG*/
+			players[i].memoryStats();
+//			RLStrategyLookupTable_small st = (RLStrategyLookupTable_small) players[i].getRLStrategy();
+//			st.printCounter();
+//			System.out.println("Rounds: " + currentGame.getRoundCount());
 		}
+		
+		if (!gameType.equals("testRandom")) {
+			if (gamesPlayed<10000 && gamesPlayed%1000==0 && gamesPlayed!=0) {
+         		testingHandler();
+         	} else if (gamesPlayed%10000==0 && gamesPlayed!=0) {
+         		for (int i=0; i<players.length; i++) {
+    				players[i].changeLR(0.2);
+    			}
+         		testingHandler();
+         	}
+		   	
+        	if (gamesPlayed%synchroniseCount==0 && gamesPlayed!=0) {
+        		
+//        		/*SHARED memory*/
+        		memory.writeMemory("" + gamesPlayed, false);
+        		memory.memoryStats();
+        		
+        		if (gamesPlayed==50000) {
+        			for (int i=0; i<players.length; i++) {
+        				players[i].changeLR(0.2);
+        			}
+        		} else if (gamesPlayed==100000) {
+        			for (int i=0; i<players.length; i++) {
+        				players[i].changeLR(0.06);
+        			}
+        		} else if (gamesPlayed==150000) {
+        			for (int i=0; i<players.length; i++) {
+        				players[i].changeLR(0.02);
+        			}
+        		}
+//        		
+//        		for (int i=0; i<players.length; i++) {
+//        			players[i].writeMemory(gamesPlayed, false);
+//        			players[i].memoryStats();
+////        			try
+////                    {
+////                        System.out.println("writing memory");
+////            			Thread.sleep(120000);
+////                    }
+////                    catch (InterruptedException e) {}
+//        		}
+//        		
+//        		/*END SHARED memory*/
+        		
+//        		try
+//                {
+//                    System.out.println("writing memory");
+//        			Thread.sleep(800000);
+//                }
+//                catch (InterruptedException e) {}            	
+            }
+        }	
 	}
 	
 	public void initialPlacementsHandler() {
@@ -280,7 +355,7 @@ public class BotServer {
 				action = playersGameOrder[cpn].rollOrPlayKnight();
 				handleAction(action, cpn);
 				
-//				/*DEBUG*/
+//				/*DEBUGA*/
 //				for (int j =0; j<playersGameOrder.length; j++) {
 //					SOCResourceSet resGame = currentGame.getPlayer(j).getResources();
 //					for (int i = 0; i< playersGameOrder.length; i++) {
@@ -305,7 +380,7 @@ public class BotServer {
 				action = playersGameOrder[cpn].buildOrTradeOrPlayCard();
 				
 //				/*DEBUG*/
-//				if (action==5) {
+//				if (action==8) {
 //					debugStats(cpn, action);
 //				}
 				
@@ -357,7 +432,7 @@ public class BotServer {
 //				}	
 //			}
 			
-//			/*DEBUGA*/
+//			/*DEBUG*/
 //			Iterator<SOCPlayer> playersIter = playersState.values().iterator();
 //	    	state.updateAll(playersState, currentGame.getBoard());
 //		    while (playersIter.hasNext()) {
@@ -366,9 +441,9 @@ public class BotServer {
 ////	    		List<Integer> playerState = Arrays.stream(state.getState(pn)).boxed().collect(Collectors.toList());
 //	    		
 //	    		/*DEBUG*/
-////	    		System.out.println("In GAME!: player " 
-////	    					+ pn.getPlayerNumber() + " state: " 
-////	    					+ Arrays.toString(playerState.toArray()));
+//	    		System.out.println("In GAME!: player " 
+//	    					+ pn.getPlayerNumber() + " state: " 
+//	    					+ Arrays.toString(playerState.toArray()));
 //	    		pn.stats();
 //		    }
 			
@@ -379,40 +454,48 @@ public class BotServer {
 			}
 		}
 		
-		
+		/*STATS WRITING*/
 		for (SOCPlayer pn : currentGame.getPlayers()) {
         	pn.writeStats(currentGame.getName(), fileName);  
 //        	pn.stats();
         }
-		players[0].memoryStats();
+//		players[0].memoryStats();
         writeStats(currentGame.getName());
         
 //        for (int i=0; i<players.length; i++) {
 //			players[i].memoryStats();
 //		}
-        
-        if (!gameType.equals("testRandom")) {
-        	if (gamesPlayed%25000==0 && gamesPlayed!=0) {
-        		for (int i=0; i<players.length; i++) {
-        			players[i].writeMemory(gamesPlayed, false);
-        			players[i].memoryStats();
-        			try
-                    {
-                        System.out.println("writing memory");
-            			Thread.sleep(120000);
-                    }
-                    catch (InterruptedException e) {}
-        		}
-        		try
-                {
-                    System.out.println("writing memory");
-        			Thread.sleep(800000);
-                }
-                catch (InterruptedException e) {}
-            	
-            }
-        }
-        
+	}
+	
+	public void testingHandler() {
+		
+		/*DEBUGA*/
+		System.out.println("Testing mode");
+		
+		RLClient[] playersTemporary = new RLClient[4];
+		for (int i=0; i<players.length; i++) {
+			playersTemporary[i] = players[i];
+		}
+		
+		players[0] = new RLClient(0, RLClient.TEST_LOOKUP_TABLE, memoryType, players[0].getMemory());
+		players[1] = new RLClient(1, RLClient.RANDOM, -1);
+		players[2] = new RLClient(2, RLClient.RANDOM, -1);
+		players[3] = new RLClient(3, RLClient.RANDOM, -1);
+		String fileNameTemporary = fileName;
+		fileName = fileName + "_testing";
+		String gameTypeTemporary = gameType;
+		gameType = "testRandom";
+				
+		int testGames = 300;
+		for (int i=0; testGames>0; i++ ) {
+        	String gaName = "~testGameAfter" + gamesPlayed + "~"  + testGames;
+        	startGame(gaName);
+        	testGames--;
+		}
+		
+		players = playersTemporary;
+		fileName = fileNameTemporary;
+		gameType = gameTypeTemporary;
 		
 	}
 	
@@ -1157,7 +1240,7 @@ public class BotServer {
         try {
         	/*STATS*/
 //        	Path path = Paths.get("log", "SE_RL_RND_stat.txt");
-        	Path path = Paths.get(fileName);
+        	Path path = Paths.get(fileName + ".txt");
             writer = new BufferedWriter(new FileWriter(path.toFile(), true));
             Date now = new Date();
             Date gstart = currentGame.getStartTime();
@@ -1269,7 +1352,8 @@ public class BotServer {
 		if (args.length < 3)
         {
             System.err.println("Java Settlers BotServer");
-            System.err.println("usage: java BotServer name n_games n_synchronise gameType");
+            System.err.println("usage: java BotServer name n_games n_write "
+            		+ "-DgameType=gameType + -Dmemory=memofile");
 
             return;
         }
@@ -1292,26 +1376,18 @@ public class BotServer {
                  name = name.substring(0, posEq);
              }
 			
-             switch(value) {
+             switch(name) {
              	case "gameType":
-             		gameType = name;
+             		gameType = value;
              		break;
              	case "memory":
-             		memoryName = Integer.parseInt(name);
+             		memoryName = Integer.parseInt(value);
              		break;
-             }
-				
-		}
-		
-		
-		
-		String gametype="";
-		if (args.length>3) {
-			gametype=args[3];
+             }		
 		}
 		
 		BotServer server = new BotServer(args[0], Integer.parseInt(args[1]), 
-				Integer.parseInt(args[2]), gametype, memoryName);
+				Integer.parseInt(args[2]), gameType, memoryName);
 		
 		server.startServer();
 

@@ -134,6 +134,7 @@ public class SOCState {
                 (robberHex != -1)
                    ? numbers.getNumbersForResource(resource, robberHex)
                    : numbers.getNumbersForResource(resource);
+                   
             
             Set<Integer> uniqueRes = new HashSet<Integer>();
             uniqueNumbers.addAll(numbersRes);

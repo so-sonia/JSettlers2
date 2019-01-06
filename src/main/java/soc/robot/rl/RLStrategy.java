@@ -53,7 +53,7 @@ public abstract class RLStrategy {
   /**vector of SOCPlayers for all opponents */
   protected Vector<SOCPlayer> opponents;
   
-  protected Double currentStateValue;
+  protected Float currentStateValue;
   
   /** macroparameters for reinforcement learning algorithm */
   protected double alpha;
@@ -101,7 +101,7 @@ public abstract class RLStrategy {
 		  }
 	  }
       
-      currentStateValue = new Double(0.0);
+      currentStateValue = new Float(0);
   }
   
   public void updateStateAfterAddingPlayer(){
@@ -452,7 +452,7 @@ public abstract class RLStrategy {
   				if (our)
   					continue;
   				
-  				if (candidates.size()==1 && hasRes[0]) {
+  				if (candidates.size()==1 && !hasRes[0]) {
   					SOCState tmpState = currentState.copySOCState();
   					if (playKnight) {					
   	  					tmpState.updatePlayedKnightCard(ourPlayerData, willGetLA, playerWithLA);
@@ -537,10 +537,17 @@ public abstract class RLStrategy {
   			state_values = state_values_no_stealing;
   			robPositions = robPositions_no_stealing;
   			playersToRob = playersToRob_no_stealing;
-  		} else {
+  		} else if (state_values_no_victims.size() !=0 ){
   			state_values = state_values_no_victims;
   			robPositions = robPositions_no_victims;
   			playersToRob = playersToRob_no_victims;
+  		} else {
+  			/* added hard coded nonsense values, 
+  			 * because 1 in 50 thousand games throws mistake
+  			 */
+  			state_values.add(Float.valueOf(0));
+  			robPositions.add(landHexes[0]);
+  			playersToRob.add(0);
   		}
   	}
   	
@@ -819,7 +826,7 @@ public abstract class RLStrategy {
   	 * resource port -> we check the state value after trading this resource for every
   	 * other resource that we can buy. 
   	 */
-  	for (int j = 0; j < plResources.length; j++) {
+  	for (int j = 0; j < 5; j++) {
   		tmpState.updateResources(ourPlayerData, false);
   		int res = plResources[j];
   		
@@ -839,7 +846,7 @@ public abstract class RLStrategy {
   				quantity = 2;
   			}
   			
-  			for (int i = 0; i < plResources.length; i++) {
+  			for (int i = 0; i < 5; i++) {
   	    		if (i == j) 
   	    			continue;
   	    		int[] resources = new int[] {i, j};
@@ -868,10 +875,11 @@ public abstract class RLStrategy {
   	AbstractMap.SimpleEntry<Float, Integer> maxAndIndex = getMaxAndIndex(state_values);
   	int[] trade = tradeOffer.get(maxAndIndex.getValue());
   	
-//  	/*DEBUG*/
+  	/*DEBUG*/
 //  	System.out.println("We decide to trade " + trade[2] + " " + 
 //  			SOCResourceConstants.resName(trade[0]+1) +
-//  			" for " + SOCResourceConstants.resName(trade[1]+1));
+//  			" for " + SOCResourceConstants.resName(trade[1]+1)
+//  			+ " trade array: " + Arrays.toString(trade));
   	
   	AbstractMap.SimpleEntry<Float, int[]> result = new AbstractMap.SimpleEntry<Float, int[]>(
   			maxAndIndex.getKey(), trade);
@@ -909,7 +917,10 @@ public abstract class RLStrategy {
   	
 //  	/*DEBUG*/
 //  	System.out.println("There are " + allCardsDiscard.size() + 
-//  			" combinations of cards we can discard");
+//  			" combinations of cards we can discard. res to discard: " + numDiscards);
+//  	System.out.println("Resources " + ourPlayerData.getResources().toFriendlyString() 
+//  			+ " res in state: " + Arrays.toString(state.getPlayerState(ourPlayerData).getResources()));
+////  	
 //  	/*DEBUG*/
 //  	int combindex = 0;
   	
@@ -934,7 +945,6 @@ public abstract class RLStrategy {
   	
 //  	/*DEBUG*/
 //  	System.out.println("Finished discarding");
-//  	System.out.println("Resources" + ourPlayerData.getResources().toFriendlyString());
 //  	System.out.println("resources to dicard " + Arrays.toString(resourceToDiscard));
   	
   	return result;  	
@@ -1302,6 +1312,10 @@ public abstract class RLStrategy {
   
   public int[] getStateRes(SOCPlayer pn) {
 	  return state.getPlayerState(pn).getResources();
+  }
+  
+  public void changeLR(double alpha) {
+	  this.alpha = alpha;
   }
 
   

@@ -47,13 +47,21 @@ public class SOCState_small extends SOCState {
 	   	 statepn.setDevCards(devCards);
 	 }
 	 
-	 /*we don't keep info about new cards, so don't change this one*/
 	 public void updateBuyDevCard(SOCPlayer pn, int boughtCard) {
+		 int[] devCards = playersInfo.get(ourPlayerNumber).getDevCards();
+		  devCards[0]++;
+		  if (boughtCard == 0) {		   
+			  playersInfo.get(ourPlayerNumber).addPoints(1);
+		  }	
 	 }
 	 
 	 public void undoUpdateBuyDevCard(SOCPlayer pn, int boughtCard) {
-	 }
-	 
+		 int[] devCards = playersInfo.get(ourPlayerNumber).getDevCards();
+		 devCards[0]--;
+		 if (boughtCard == 0) {		   
+		   playersInfo.get(ourPlayerNumber).substractPoints(1);
+		 }	
+	 }	 
 	 
 	 public void updatePlayedDevCard(int cardPlayed) {
 		 int[] devCards = playersInfo.get(Integer.valueOf(ourPlayerNumber)).getDevCards();
@@ -108,9 +116,8 @@ public class SOCState_small extends SOCState {
 	 
 	 public int[] getState(SOCPlayer pn) {
 		   SOCPlayerState pnState = playersInfo.get(Integer.valueOf(pn.getPlayerNumber()));
-		   int[] stateArray = pnState.getStateArray();
 	      
-	       return stateArray;
+	       return pnState.getStateArray();
 	   }
 	 
 	   public SOCState copySOCState() {

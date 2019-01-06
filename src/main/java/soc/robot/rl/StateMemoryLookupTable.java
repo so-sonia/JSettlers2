@@ -19,28 +19,28 @@ import java.lang.Math;
 public class StateMemoryLookupTable  {
 
 	 /** Memory for all the states type 1 that will be synchronised among servers*/
-    protected HashMap<List<Integer>, Double[]> states;
+    protected HashMap<SOCStateArray, Float[]> states;
     
     /** Memory for all the states type 1*/
-    protected HashMap<List<Integer>, Double[]> statesOrg;
+    protected HashMap<SOCStateArray, Float[]> statesOrg;
     
     /** Memory for all the states type 2  that will be synchronised among servers*/
-    protected HashMap<List<Integer>, Double[]> states2;
+    protected HashMap<SOCStateArray, Float[]> states2;
     
     /** Memory for all the states type 2 */
-    protected HashMap<List<Integer>, Double[]> states2Org;
+    protected HashMap<SOCStateArray,  Float[]> states2Org;
     
     protected int port;
 	
 	public StateMemoryLookupTable(int port) {
-		 states = new HashMap<List<Integer>, Double[]>();    
-	     states2 = new HashMap<List<Integer>, Double[]>(); 
-	     statesOrg = new HashMap<List<Integer>, Double[]>();    
-	     states2Org = new HashMap<List<Integer>, Double[]>(); 
+		 states = new HashMap<SOCStateArray, Float[]>();    
+	     states2 = new HashMap<SOCStateArray, Float[]>(); 
+	     statesOrg = new HashMap<SOCStateArray, Float[]>();    
+	     states2Org = new HashMap<SOCStateArray, Float[]>(); 
 	     this.port = port;
 	}
 
-	public Double[] getState1Value(List<Integer> state) {
+	public Float[] getState1Value(SOCStateArray state) {
 		return(states.get(state));
 	}
 
@@ -48,7 +48,7 @@ public class StateMemoryLookupTable  {
 //		states.put(state,  value);
 //	}
 	
-	public void setState1Value(List<Integer> state, Double[] value) {
+	public void setState1Value(SOCStateArray state, Float[] value) {
 //		Double[] currentValueCount = states.get(state);
 //		if (currentValueCount==null) {
 //			statesOrg.put(state,   new Double[] {value[0], Double.valueOf(1.0)});
@@ -67,11 +67,11 @@ public class StateMemoryLookupTable  {
 	}
 	
 	
-	public Double[] getState2Value(List<Integer> state) {
+	public Float[] getState2Value(SOCStateArray state) {
 		return(states2.get(state));
 	}
 
-	public void setState2Value(List<Integer> state, Double[] value) {
+	public void setState2Value(SOCStateArray state, Float[] value) {
 //		Double[] currentValueCount = states2Org.get(state);
 //		if (currentValueCount==null) {
 //			states2Org.put(state,   new Double[] {value[0], Double.valueOf(1.0)});
@@ -138,14 +138,14 @@ public class StateMemoryLookupTable  {
 			 writePath(path, statesOrg);
 			 /*DEBUGA*/
 	         System.out.println(statesOrg.size() + " statesOrg written");
-	         statesOrg=new HashMap<List<Integer>, Double[]>();
+	         statesOrg=new HashMap<SOCStateArray, Float[]>();
 		 }
 		 		 
 //		 /*DEBUG*/
 //        System.out.println("Serialized HashMap states data is saved in " + path.toString());
 //        System.out.println(states.size() + " states saved");
 //        states.forEach((key, value) -> System.out.println(
-//       		 Arrays.toString(key.toArray()) + " : " + Arrays.toString(value)));
+//       		 key.toString() + " : " + Arrays.toString(value)));
 
 //        path = Paths.get("memory", "RL_LT_" + nick + "_states2_" + port); 
         path = Paths.get("RL_LT_" + nick + "_states2_" + port); 
@@ -159,7 +159,7 @@ public class StateMemoryLookupTable  {
 			 writePath(path, states2Org);
 			 /*DEBUGA*/
 		     System.out.println(states2Org.size() + " states2Org written");
-		     states2Org=new HashMap<List<Integer>, Double[]>();
+		     states2Org=new HashMap<SOCStateArray, Float[]>();
 		 }
 		        
         
@@ -167,7 +167,7 @@ public class StateMemoryLookupTable  {
 //        System.out.println("Serialized HashMap states2 data is saved in " + path.toString());
 //        System.out.println(states2.size() + " states2 saved");
 //        states2.forEach((key, value) -> System.out.println(
-//       		 Arrays.toString(key.toArray()) + " : " + Arrays.toString(value)));
+//       		 key.toString() + " : " + Arrays.toString(value)));
 		 
 
 	 }
@@ -178,7 +178,7 @@ public class StateMemoryLookupTable  {
 //
 //	 }
 	
-	protected void writePath(Path path, HashMap<List<Integer>, Double[]> target){
+	protected void writePath(Path path, HashMap<SOCStateArray, Float[]> target){
 		 try
         {
 			 FileOutputStream fos =
@@ -195,17 +195,41 @@ public class StateMemoryLookupTable  {
 	 }
 	
 	public void memoryStats() {
+//		float sum = 0;
+//		for (Float[] arr : states.values()) {
+//			sum+=arr[1].floatValue();
+//		}
+//		
+//		float sum2 = 0;
+//		for (Float[] arr : states2.values()) {
+//			sum2+=arr[1].floatValue();
+//		}
+//		
+//		System.out.println("rlbot" + port + " there are " + states.size() 
+//				+ " states and " + states2.size() + " states2"
+//				+ " total states: " + sum + " total states2: " + sum2);
+		
 		System.out.println("rlbot" + port + " there are " + states.size() 
-				+ " states and " + states2.size() + " states2");
+		+ " states and " + states2.size() + " states2");
+		
+//		 /*DEBUG*/
+//      states.forEach((key, value) -> System.out.println(
+//     		 key.toString() + " : " + Arrays.toString(value)));
+//      
+//      states2.forEach((key, value) -> System.out.println(
+//    		 key.toString() + " : " + Arrays.toString(value)));
+		
 	}
 	
-	 protected HashMap<List<Integer>, Double[]> readPath(Path path){
-		 HashMap<List<Integer>, Double[]> map = null;
+	
+	
+	 protected HashMap<SOCStateArray, Float[]> readPath(Path path){
+		 HashMap<SOCStateArray, Float[]> map = null;
 		 try
 	     {
 	    	 FileInputStream fis = new FileInputStream(path.toFile());
 	         ObjectInputStream ois = new ObjectInputStream(fis);
-	         map = (HashMap<List<Integer>, Double[]>) ois.readObject();
+	         map = (HashMap<SOCStateArray, Float[]>) ois.readObject();
 	         ois.close();
 	         fis.close();
 	      } catch(EOFException eof) {
@@ -230,10 +254,10 @@ public class StateMemoryLookupTable  {
        System.out.println(states.size() + " states in memory");
        states.forEach((key, value) -> 
        			{
-       				System.out.println(Arrays.toString(value));
-       				if(Math.abs(value[0]-0)<1e-6 || Math.abs(value[0]-1)<1e-6) 
+//       				System.out.println(Arrays.toString(value));
+//       				if(Math.abs(value[0]-0)<1e-6 || Math.abs(value[0]-1)<1e-6) 
        					System.out.println(
-       							Arrays.toString(key.toArray()) + " : " + Arrays.toString(value) ); 
+       							key.toString() + " : " + Arrays.toString(value) ); 
        					} );
 	 }
 	 
@@ -269,7 +293,7 @@ public class StateMemoryLookupTable  {
 				 writePath(path, statesOrg);
 				 /*DEBUGA*/
 		         System.out.println(statesOrg.size() + " statesOrg written");
-		         statesOrg=new HashMap<List<Integer>, Double[]>();
+		         statesOrg=new HashMap<SOCStateArray, Float[]>();
 			 }
 			 		 
 //			 /*DEBUG*/
@@ -290,7 +314,7 @@ public class StateMemoryLookupTable  {
 				 writePath(path, states2Org);
 				 /*DEBUGA*/
 			     System.out.println(states2Org.size() + " states2Org written");
-			     states2Org=new HashMap<List<Integer>, Double[]>();
+			     states2Org=new HashMap<SOCStateArray, Float[]>();
 			 }
 			        
 	        
@@ -318,7 +342,7 @@ public class StateMemoryLookupTable  {
 			 /*DEBUGA*/
 			 System.out.println("reading memory");
 			 
-			 HashMap<List<Integer>, Double[]> map = null;
+			 HashMap<SOCStateArray, Float[]> map = null;
 			 
 			 try (DirectoryStream<Path> dirStream = Files.newDirectoryStream(
 			            Paths.get("memory"),  "RL_LT_" + nick + "_states_*")) {			 
@@ -335,13 +359,13 @@ public class StateMemoryLookupTable  {
 					 map = readPath(dir);
 					 map.forEach(
 							    (key, value) -> statesOrg.merge(key, value, (v1, v2) -> 
-							    {Double[] val = new Double[] {
+							    {Float[] val = new Float[] {
 							    		(v1[0]*v1[1]+v2[0]*v2[1])/(v1[1]+v2[1]), 
 							    		v1[1] + v2[1]}; 
 							    		return val; }) );
 					 map.forEach(
 							    (key, value) -> states.merge(key, value, (v1, v2) -> 
-							    {Double[] val = new Double[] {
+							    {Float[] val = new Float[] {
 							    		(v1[0]*v1[1]+v2[0]*v2[1])/(v1[1]+v2[1]), 
 							    		v1[1] + v2[1]}; 
 							    		return val; }) );
@@ -369,14 +393,14 @@ public class StateMemoryLookupTable  {
 					 map = readPath(dir);
 					 map.forEach(
 							    (key, value) -> states2Org.merge(key, value, (v1, v2) -> 
-							    {Double[] val = new Double[] {
+							    {Float[] val = new Float[] {
 							    		(v1[0]*v1[1]+v2[0]*v2[1])/(v1[1]+v2[1]), 
 							    		v1[1] + v2[1]}; 
 							    		return val; }) );
 					 
 					 map.forEach(
 							    (key, value) -> states2.merge(key, value, (v1, v2) -> 
-							    {Double[] val = new Double[] {
+							    {Float[] val = new Float[] {
 							    		(v1[0]*v1[1]+v2[0]*v2[1])/(v1[1]+v2[1]), 
 							    		v1[1] + v2[1]}; 
 							    		return val; }) );
@@ -445,7 +469,7 @@ public class StateMemoryLookupTable  {
 			 /*DEBUGA*/
 			 System.out.println("synchronise Across Players");
 			 
-			 HashMap<List<Integer>, Double[]> map = null;
+			 HashMap<SOCStateArray, Float[]> map = null;
 			 
 			 try (DirectoryStream<Path> dirStream = Files.newDirectoryStream(
 			            Paths.get("memory"),  "RL_LT_*org_states_8888")) {			 
@@ -462,7 +486,7 @@ public class StateMemoryLookupTable  {
 					 map = readPath(dir);
 					 map.forEach(
 							    (key, value) -> states.merge(key, value, (v1, v2) -> 
-							    {Double[] val = new Double[] {
+							    {Float[] val = new Float[] {
 							    		(v1[0]*v1[1]+v2[0]*v2[1])/(v1[1]+v2[1]), 
 							    		v1[1] + v2[1]}; 
 							    		return val; }) );
@@ -489,7 +513,7 @@ public class StateMemoryLookupTable  {
 					 map = readPath(dir);
 					 map.forEach(
 							    (key, value) -> states2.merge(key, value, (v1, v2) -> 
-							    {Double[] val = new Double[] {
+							    {Float[] val = new Float[] {
 							    		(v1[0]*v1[1]+v2[0]*v2[1])/(v1[1]+v2[1]), 
 							    		v1[1] + v2[1]}; 
 							    		return val; }) );
