@@ -27,7 +27,7 @@ public class SOCState_small extends SOCState {
 	}
 	
 	public void addPlayerState(int playerNumber) {
-    	SOCPlayerState state = new SOCPlayerState_small();
+    	PlayerState state = new SOCPlayerState_small();
         playersInfo.put(new Integer(playerNumber), state);
     }
 	
@@ -35,7 +35,7 @@ public class SOCState_small extends SOCState {
 		int[] devCards = new int[2];
 		SOCInventory inventory = pn.getInventory();
     	devCards[0] = inventory.getTotal();
-    	SOCPlayerState statepn = playersInfo.get(Integer.valueOf(pn.getPlayerNumber()));
+    	PlayerState statepn = playersInfo.get(Integer.valueOf(pn.getPlayerNumber()));
     	statepn.setDevCards(devCards);
 	}
 	
@@ -43,7 +43,7 @@ public class SOCState_small extends SOCState {
 		 int[] devCards = new int[2];
 		 SOCInventory inventory = pn.getInventory();
 	     devCards[0] = inventory.getTotal();
-	   	 SOCPlayerState statepn = playersInfo.get(Integer.valueOf(pn.getPlayerNumber()));
+	   	 PlayerState statepn = playersInfo.get(Integer.valueOf(pn.getPlayerNumber()));
 	   	 statepn.setDevCards(devCards);
 	 }
 	 
@@ -69,7 +69,7 @@ public class SOCState_small extends SOCState {
 	 }
 	 
 	 public void updatePlayedKnightCard(SOCPlayer pn, boolean willGetLA, SOCPlayer currentPlayerWithLA) {
-		   SOCPlayerState pnState = getPlayerState(pn);
+		   PlayerState pnState = getPlayerState(pn);
 		   int[] devCards = pnState.getDevCards();
 			//decrease the number of old knight cards in our hand
 			devCards[0]--;
@@ -115,20 +115,20 @@ public class SOCState_small extends SOCState {
 	  }
 	 
 	 public int[] getState(SOCPlayer pn) {
-		   SOCPlayerState pnState = playersInfo.get(Integer.valueOf(pn.getPlayerNumber()));
+		   PlayerState pnState = playersInfo.get(Integer.valueOf(pn.getPlayerNumber()));
 	      
 	       return pnState.getStateArray();
 	   }
 	 
 	   public SOCState copySOCState() {
 		   SOCState copy = new SOCState_small(ourPlayerNumber);
-		   HashMap<Integer, SOCPlayerState> copyPlayersInfo = copy.getPlayersInfo();
+		   HashMap<Integer, PlayerState> copyPlayersInfo = copy.getPlayersInfo();
 		   Iterator<Integer> pnIter = playersInfo.keySet().iterator();
 
 	       while (pnIter.hasNext())
 	       {
 	    	   Integer key = pnIter.next();
-	    	   copyPlayersInfo.put(key, new SOCPlayerState_small(playersInfo.get(key)));
+	    	   copyPlayersInfo.put(key, playersInfo.get(key).clone());
 	       }
 		   
 		   return copy;

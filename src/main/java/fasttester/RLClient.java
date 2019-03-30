@@ -27,24 +27,39 @@ import soc.robot.rl.RLStrategyLookupTable;
 import soc.robot.rl.RLStrategyLookupTable_small;
 import soc.robot.rl.RLStrategyLookupTable_small_test;
 import soc.robot.rl.RLStrategyLookupTable_test;
+import soc.robot.rl.RLStrategyNN;
+import soc.robot.rl.RLStrategyNN_opp1;
+import soc.robot.rl.RLStrategyNN_opp1_test;
+import soc.robot.rl.RLStrategyNN_opp4;
+import soc.robot.rl.RLStrategyNN_oppsum;
+import soc.robot.rl.RLStrategyNN_oppsum_test;
+import soc.robot.rl.RLStrategyNN_test;
 import soc.robot.rl.RLStrategyRandom;
 import soc.robot.rl.StateMemoryLookupTable;
+import soc.robot.rl.StateValueFunction;
 import soc.robot.rl.RLStrategy;
 
 public class RLClient {
 
+	/* type of RLClients, type indicates how states values are stored (lookup table, neural network)
+	 * and whether bot updates values (training) or only uses them (testing)
+	 */
 	public static final int RANDOM = 0;
 	public static final int TRAIN_LOOKUP_TABLE = 1;
 	public static final int TEST_LOOKUP_TABLE= 2;
+	public static final int TRAIN_NN = 3;
+	public static final int TEST_NN = 4;
 	
 	protected int playerNumber;
 	
 	protected String name;
 	
+	/*used from original game*/
 	protected OpeningBuildStrategy openingBuildStrategy;
 	
 	protected SOCGame game;
 	
+	/*data that will be used for deriving soc state*/
 	protected SOCPlayer ourPlayerData;
 	
 	protected int strategyType;
@@ -55,7 +70,9 @@ public class RLClient {
 	 * TO change type for different RL Strategies look for phrase 
 	 * "update type if changed memory"
 	 */
-	protected StateMemoryLookupTable memory;
+//	protected StateMemoryLookupTable memory;
+	protected StateValueFunction memory;
+	protected StateValueFunction memory2;
 	
 	/**
 	 * Responsible for all logic behind bots moves. Uses Reinforcement learning algorithm to 
@@ -78,40 +95,56 @@ public class RLClient {
     
     protected int lastStartingRoadTowardsNode;
 	
-    public RLClient(int i, int strategyType, int memoryType, StateMemoryLookupTable memory) {
-    	if (memory==null) {
-    		this.memory = new StateMemoryLookupTable(i);
-    	} else {
-    		this.memory = memory;
-    	}    
-    	
-    	playerNumber = i;
-		name = "rlbot" + i;
-		this.strategyType = strategyType;
-		
-		/*DEBUGA*/
-		switch (strategyType) {
-		case RLClient.RANDOM:
-			System.out.println("Random bot created number: " + playerNumber);
-			break;
-		case RLClient.TRAIN_LOOKUP_TABLE:
-			System.out.println("Train lookup table bot created number: " + playerNumber);
-			break;
-		case RLClient.TEST_LOOKUP_TABLE:
-			System.out.println("Test lookup table bot created number: " + playerNumber);
-			break;
-		}
-		
-    }
+    /*used for shared memory, had to comment, because of another memory type
+     * update type if changed memory
+     */
+//    public RLClient(int i, int strategyType, int memoryType, StateMemoryLookupTable memory) {
+//    	if (memory==null) {
+//    		/*update type if changed memory*/
+//    		this.memory = new StateMemoryLookupTable(i);
+//    	} else {
+//    		this.memory = memory;
+//    	}    
+//    	
+//    	playerNumber = i;
+//		name = "rlbot" + i;
+//		this.strategyType = strategyType;
+//		
+//		/*DEBUGA*/
+//		switch (strategyType) {
+//		case RLClient.RANDOM:
+//			System.out.println("Random bot created number: " + playerNumber);
+//			break;
+//		case RLClient.TRAIN_LOOKUP_TABLE:
+//			System.out.println("Train lookup table bot created number: " + playerNumber);
+//			break;
+//		case RLClient.TEST_LOOKUP_TABLE:
+//			System.out.println("Test lookup table bot created number: " + playerNumber);
+//			break;
+//		case RLClient.TRAIN_NN:
+//			System.out.println("Train Neural Network bot created number: " + playerNumber);
+//			break;
+//		}
+//		
+//    }
     
+    /*Depending on strategy type RLStrategy is created with neural networks or with lookup table*/
 	public RLClient(int i, int strategyType, int memoryType) {
 		playerNumber = i;
 		name = "rlbot" + i;
 		
 		/*update type if changed memory*/
-		this.memory = new StateMemoryLookupTable(i);
+//		this.memory = new StateMemoryLookupTable(i);
+//		this.memory = new StateValueFunction(i, 33);
+//		this.memory2 = new StateValueFunction(i, 8);
+		//for RLStrategyNN_opp1
+		this.memory = new StateValueFunction(i, 72);
+//		this.memory2 = new StateValueFunction(i, 7);
+        
+		
 		this.strategyType = strategyType;
 		
+		/*read memory if filenumber provided*/
 		if (memoryType!=-1) {
 			if (strategyType==RLClient.TEST_LOOKUP_TABLE || strategyType==RLClient.TRAIN_LOOKUP_TABLE) {
 				memory.readMemory(getName()+ "_" + memoryType);
@@ -129,6 +162,13 @@ public class RLClient {
 		case RLClient.TEST_LOOKUP_TABLE:
 			System.out.println("Test lookup table bot created number: " + playerNumber);
 			break;
+		case RLClient.TRAIN_NN:
+			System.out.println("Train Neural Network bot created number: " + playerNumber);
+			break;
+		case RLClient.TEST_NN:
+			System.out.println("Test Neural Network bot created number: " + playerNumber);
+			break;
+			
 		}
 		
 	}
@@ -151,17 +191,36 @@ public class RLClient {
 		openingBuildStrategy = new OpeningBuildStrategy(game, ourPlayerData);
 		
 		switch (strategyType) {
+//		    /*update type if changed memory
+//		had to comment out becaouse of changed to NN*/
 			case RLClient.RANDOM:
 //				System.out.println("Random bot created number: " + playerNumber);
-				rlStrategy = new RLStrategyRandom(game, playerNumber, memory);
+				rlStrategy = new RLStrategyRandom(game, playerNumber);
 				break;
-			case RLClient.TRAIN_LOOKUP_TABLE:
-//				System.out.println("Train lookup table bot created number: " + playerNumber);
-				rlStrategy = new RLStrategyLookupTable_small(game, playerNumber, memory);
+//			case RLClient.TRAIN_LOOKUP_TABLE:
+////				System.out.println("Train lookup table bot created number: " + playerNumber);
+//				rlStrategy = new RLStrategyLookupTable_small(game, playerNumber, memory);
+//				break;
+//			case RLClient.TEST_LOOKUP_TABLE:
+////				System.out.println("Test lookup table bot created number: " + playerNumber);
+//				rlStrategy = new RLStrategyLookupTable_small_test(game, playerNumber, memory);
+//				break;
+			case RLClient.TRAIN_NN:
+//				RLStrategyNN rlStrategyTemp = new RLStrategyNN(game, playerNumber);
+//				RLStrategyNN_opp1 rlStrategyTemp = new RLStrategyNN_opp1(game, playerNumber);
+				RLStrategyNN_oppsum rlStrategyTemp = new RLStrategyNN_oppsum(game, playerNumber);
+//				RLStrategyNN_opp4 rlStrategyTemp = new RLStrategyNN_opp4(game, playerNumber);
+				rlStrategyTemp.setStates(memory);
+//				rlStrategyTemp.setStates2(memory2);
+				rlStrategy = rlStrategyTemp;
 				break;
-			case RLClient.TEST_LOOKUP_TABLE:
-//				System.out.println("Test lookup table bot created number: " + playerNumber);
-				rlStrategy = new RLStrategyLookupTable_small_test(game, playerNumber, memory);
+			case RLClient.TEST_NN:
+//				RLStrategyNN_test rlStrategyTempTest = new RLStrategyNN_test(game, playerNumber);
+//				RLStrategyNN_opp1_test rlStrategyTempTest = new RLStrategyNN_opp1_test(game, playerNumber);
+				RLStrategyNN_oppsum_test rlStrategyTempTest = new RLStrategyNN_oppsum_test(game, playerNumber);
+				rlStrategyTempTest.setStates(memory);
+//				rlStrategyTempTest.setStates2(memory2);
+				rlStrategy = rlStrategyTempTest;
 				break;
 		}
 		moveRobber = null;
@@ -543,6 +602,7 @@ public class RLClient {
 	
 	public void writeMemory(int n, boolean org) {
 		memory.writeMemory(getName() + "_" + n, org);
+//		memory2.writeMemory(getName() + "_mem2_" + n, org);
 	}
 	
 	public void memoryStats() {
@@ -558,8 +618,42 @@ public class RLClient {
 		rlStrategy.changeLR(alpha);
 	}
 	
-	public StateMemoryLookupTable getMemory() {
+	/*update type if changed memory*/
+//	public StateMemoryLookupTable getMemory() {
+//		return memory;
+//	}
+	
+	public StateValueFunction getMemory1() {
 		return memory;
+	}
+	
+	public StateValueFunction getMemory2() {
+		return memory2;
+	}
+	
+	public void startTraining() {
+		strategyType = RLClient.TRAIN_NN;
+		memory.setIsTraining(true);
+//		memory2.setIsTraining(true);
+		Thread thread = new Thread(memory);
+        thread.start();
+//        Thread thread2 = new Thread(memory2);
+//        thread2.start();
+//        memory.printStats();
+	}
+	
+	public void startTesting() {
+		memory.setIsTraining(false);
+//		memory2.setIsTraining(false);
+		strategyType = RLClient.TEST_NN;
+//		memory.printStats();
+	}
+	
+	public void endTraining() {
+		memory.setIsTraining(false);
+//		memory2.setIsTraining(false);
+//		memory.printCounter();
+//		memory2.printCounter();
 	}
 
 }

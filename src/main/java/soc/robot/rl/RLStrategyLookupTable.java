@@ -109,7 +109,7 @@ public class RLStrategyLookupTable extends RLStrategy{
     		Float value = null;
     		Float[] valueCount = memory.getState1Value(playerState);
     		if (valueCount==null) {
-    			value = (float)(new Random().nextGaussian()*0.05 + 0.5);;
+    			value = (float)(new Random().nextGaussian()*0.05 + 0.5);
     			memory.setState1Value(playerState, new Float[] {value, Float.valueOf(1)});
     		} else {
     			value = valueCount[0];

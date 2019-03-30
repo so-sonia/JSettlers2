@@ -44,6 +44,8 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.Vector;
 
+import fasttester.BotServer;
+
 
 /**
  * A class for holding and manipulating game data.
@@ -1315,6 +1317,9 @@ public class SOCGame implements Serializable, Cloneable
         if (active)
             startTime = new Date();
         lastActionTime = System.currentTimeMillis();
+        
+        /*added by Sonia*/
+        rand.setSeed(BotServer.SEED);
     }
 
     /**

@@ -3417,7 +3417,7 @@ public class RlbotBrain2 extends SOCRobotBrain {
 //        /*DEBUG*/
 //        System.out.println("There are " + playerTrackers.size() + " trackers");
 //        rlStrategy = new RLStrategyLookupTable(this);
-        rlStrategy = new RLStrategyRandom(game, ourPlayerNumber, client.getStateMemory());
+        rlStrategy = new RLStrategyRandom(game, ourPlayerNumber);
 
       
         // Verify expected face (fast or smart robot)

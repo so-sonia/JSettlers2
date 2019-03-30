@@ -10,7 +10,7 @@ import java.util.Arrays;
  * In case the field in {@link SOCPlayerState} will be changed. Method {@link #stateLength()}
  * should be changed accordingly;
  */
-public class SOCPlayerState{
+public class SOCPlayerState extends PlayerState {
 	
 	protected int[] resources;
 	protected int points;
@@ -33,24 +33,28 @@ public class SOCPlayerState{
 	public SOCPlayerState(){
 		
 	}
-	public SOCPlayerState(SOCPlayerState state){
-		this.resources = Arrays.copyOf(state.resources, state.resources.length);
-		this.points = state.points;
-		this.devCards =  Arrays.copyOf(state.devCards, state.devCards.length);
-		this.resourceProbabilities = Arrays.copyOf(state.resourceProbabilities, 
-				state.resourceProbabilities.length);
-		this.resourceAdjacentBuildings = Arrays.copyOf(state.resourceAdjacentBuildings, 
-				state.resourceAdjacentBuildings.length);
-		this.uniqueAdjacentHexes = state.uniqueAdjacentHexes;
-		this.uniqueNumbers = state.uniqueNumbers;
-		this.longestRoad = state.longestRoad;
-		this.playedKnights = state.playedKnights;
-		this.hasLargestArmy = state.hasLargestArmy;
-		this.hasLongestRoad = state.hasLongestRoad;
-		this.ports = Arrays.copyOf(state.ports, state.ports.length);
-		this.blockedByRobber = state.blockedByRobber;
-		this.numberOfPotentialSettlements = state.numberOfPotentialSettlements;
+	
+	public SOCPlayerState clone() {
+		SOCPlayerState pn = null;
+
+		pn = (SOCPlayerState) super.clone();
+		pn.resources = resources.clone();
+		pn.devCards = devCards.clone();
+		pn.resourceProbabilities = resourceProbabilities.clone();
+		pn.resourceAdjacentBuildings = resourceAdjacentBuildings.clone();
+		pn.ports = ports.clone();
+        
+        return pn;
 	}
+	
+	public SOCPlayerState cloneVanilla() {
+		SOCPlayerState pn = null;
+
+		pn = (SOCPlayerState) super.clone();
+        
+        return pn;
+	}
+	
 	public int[] getResources() {
 		return resources;
 	}

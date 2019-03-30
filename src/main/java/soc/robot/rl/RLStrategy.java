@@ -8,10 +8,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 import java.util.Vector;
 
-
+import fasttester.BotServer;
 import soc.game.SOCBoard;
 import soc.game.SOCCity;
 import soc.game.SOCDevCardConstants;
@@ -65,6 +66,13 @@ public abstract class RLStrategy {
    */
   protected final int ourPlayerNumber;
   
+  /**used in  {@link #buildOrTradeOrPlayCard() }, seed should be the same as the seed
+   * provided at the beginning of the program (use {@link BotServer#SEED}). 
+   * Seed should be set in constructor.
+   * It will be also used in child classes in implementations of
+   * {@link #getStateValue()}  */
+  protected Random rnd;
+  
   /**
    * Create an RLStrategy for a {@link RLClient}'s player.
    * @param game
@@ -84,6 +92,7 @@ public abstract class RLStrategy {
       board = game.getBoard();
       alpha = 0.6;
       gamma = 1.0;
+      rnd = new Random(BotServer.SEED);
       
 //      System.out.println("alpha " + alpha + " gamma " + gamma); 
         
@@ -192,7 +201,7 @@ public abstract class RLStrategy {
    * Removes resources needed to build a road
    * <li>
    * Updates state statistics after placing the road using 
-   * {@link SOCGame.putTempPiece(tmpRoad)}
+   * {@link SOCGame#putTempPiece(tmpRoad)}
    * </ul>
    * 
    * 
@@ -813,7 +822,7 @@ public abstract class RLStrategy {
 //  	/*DEBUG*/
 //  	System.out.println("resource " + Arrays.toString(plResources) + 
 //  			" resource in tmpstate " + Arrays.toString(tmpState.getPlayerState(ourPlayerData).getResources()));
-//  	
+  	
   	//usually to trade with bank we have to give 4 resources of the same type
   	int howMuchToGive = 4;
   	//if we have MISC port we have to give only 3 resources
@@ -828,6 +837,7 @@ public abstract class RLStrategy {
   	 */
   	for (int j = 0; j < 5; j++) {
   		tmpState.updateResources(ourPlayerData, false);
+
   		int res = plResources[j];
   		
 //  		/*DEBUG*/
@@ -851,8 +861,8 @@ public abstract class RLStrategy {
   	    			continue;
   	    		int[] resources = new int[] {i, j};
       			int[] amounts = new int[] {1, -quantity};
-      			tmpState.updateResources(ourPlayerData, false);
-      			tmpState.updateAddSubstractResources(resources, amounts);
+      			tmpState.updateResources(ourPlayerData, false);      			
+      			tmpState.updateAddSubstractResources(resources, amounts);  			
 
   	    		state_values.add(Float.valueOf(getStateValue(tmpState)));	
   	    		tradeOffer.add(new int[] {j, i, quantity});
@@ -1042,7 +1052,7 @@ public abstract class RLStrategy {
    */
   public AbstractMap.SimpleEntry<Integer, int[]> rollOrPlayKnight() {
 
-//  	/*DEBUG*/
+//  	/*DEBUGA*/
 //  	System.out.println("rollOrPlayKnight() was called");
   	
   	updateStateValue();
@@ -1073,7 +1083,7 @@ public abstract class RLStrategy {
   public int[] moveRobber() {
   	
 //  	/*DEBUG*/
-//  	System.out.println(brain.getName() + " moveRobber() was called");
+//  	System.out.println(" moveRobber() was called");
   	
   	updateStateValue();
   	
@@ -1228,7 +1238,9 @@ public abstract class RLStrategy {
   	if (maxAndIndex.getKey() < currentStateValue) {
 //  		/*DEBUG*/
 //  		System.out.println("choose do nothing");
-  		return(new AbstractMap.SimpleEntry<Integer, int[]>(END_TURN, null));
+  		if (rnd.nextGaussian()>0.6) {
+  			return(new AbstractMap.SimpleEntry<Integer, int[]>(END_TURN, null));
+  		}
   	}
   	
   	switch (actionNames.get(maxAndIndex.getValue())) {

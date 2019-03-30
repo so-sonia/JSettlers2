@@ -136,10 +136,8 @@
     <include name="net/nand/util/i18n/mgr/" />         <!-- i18n string manager -->
   </patternset>
   <patternset id="fast.files">
-    <include name="resources/" />   <!-- images, strings, client may run local server -->
-    <include name="soc/" />         <!-- thus, everything -->
-    <include name="net/nand/util/i18n/mgr/" />         <!-- i18n string manager -->
 	<include name="fasttester/" />  
+  	<include name="soc/" /> 
   </patternset>
   <patternset id="mem.files">
 	<include name="fasttester/" />  

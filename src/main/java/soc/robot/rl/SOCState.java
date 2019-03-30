@@ -20,7 +20,7 @@ import soc.game.SOCSettlement;
 
 public class SOCState {
 	
-	protected HashMap<Integer, SOCPlayerState> playersInfo;
+	protected HashMap<Integer, PlayerState> playersInfo;
 	
     /**
      * {@link #ourPlayerData}'s player number.
@@ -35,7 +35,7 @@ public class SOCState {
 	 * @param pln our player number
 	 */
 	public SOCState(int pln, HashMap<Integer,SOCPlayer> players){
-		playersInfo = new HashMap<Integer, SOCPlayerState>();	
+		playersInfo = new HashMap<Integer, PlayerState>();	
 		ourPlayerNumber = pln;
 		
 		Iterator<SOCPlayer> playersIter = players.values().iterator();
@@ -47,7 +47,7 @@ public class SOCState {
 	}	
 	
 	public SOCState(int pln){
-		playersInfo = new HashMap<Integer, SOCPlayerState>();	
+		playersInfo = new HashMap<Integer, PlayerState>();	
 		ourPlayerNumber = pln;
 	}	
 	
@@ -93,7 +93,7 @@ public class SOCState {
     	devCards[0] = inventory.getAmount(SOCInventory.OLD, SOCDevCardConstants.UNKNOWN);
     	devCards[1] = inventory.getAmount(SOCInventory.NEW, SOCDevCardConstants.UNKNOWN);   	
     	/*DEBUG*/
-    	SOCPlayerState statepn = playersInfo.get(Integer.valueOf(pn.getPlayerNumber()));
+    	PlayerState statepn = playersInfo.get(Integer.valueOf(pn.getPlayerNumber()));
     	statepn.setDevCards(devCards);
 //    	playersInfo.get(Integer.valueOf(pn.getPlayerNumber())).setDevCards(devCards);
     }
@@ -151,7 +151,7 @@ public class SOCState {
             
         }
     	
-    	SOCPlayerState state = playersInfo.get(Integer.valueOf(pn.getPlayerNumber()));
+    	PlayerState state = playersInfo.get(Integer.valueOf(pn.getPlayerNumber()));
     	state.setResourceProbabilities(resourceNumbers);
     	state.setUniqueNumbers(uniqueNumbers.size());
     }
@@ -230,7 +230,7 @@ public class SOCState {
     	        }
     	}
     	
-    	SOCPlayerState state = playersInfo.get(Integer.valueOf(pn.getPlayerNumber()));
+    	PlayerState state = playersInfo.get(Integer.valueOf(pn.getPlayerNumber()));
     	state.setResourceAdjacentBuildings(resourceAdjacentBuildings);
     	state.setUniqueAdjacentHexes(uniqueHexes.size());    
     	state.setBlockedByRobber(blockedByRobber); 
@@ -259,6 +259,10 @@ public class SOCState {
      */
     public void updateResources(SOCPlayer pn, boolean otherPlayer) {
     	int[] resources = pn.getResources().getAmounts(otherPlayer);
+//    	if ((pn.getPlayerNumber()==ourPlayerNumber) & resources.length > 5 ) {
+////        	/*DEBUG*/
+//        	System.out.println("resource " + Arrays.toString(resources)); 
+//    	}
 //    	/*DEBUG*/
 //    	System.out.println("resource " + Arrays.toString(resources));  	
     	playersInfo.get(Integer.valueOf(pn.getPlayerNumber())).setResources(
@@ -364,8 +368,8 @@ public class SOCState {
    }
    
    public int[] getState(SOCPlayer pn) {
-	   SOCPlayerState opponentState = playersInfo.get(Integer.valueOf(pn.getPlayerNumber()));
-	   SOCPlayerState ourState = playersInfo.get(Integer.valueOf(ourPlayerNumber));
+	   PlayerState opponentState = playersInfo.get(Integer.valueOf(pn.getPlayerNumber()));
+	   PlayerState ourState = playersInfo.get(Integer.valueOf(ourPlayerNumber));
 	   int[] ourPlayerArray = ourState.getStateArray();
 	   int[] opponentArray = opponentState.getStateArray();
 	   
@@ -448,9 +452,9 @@ public class SOCState {
     * @param all - if all resources of given type will be stolen
     */
    public void updateSteal(SOCPlayer pn, int res, boolean all) {
-	   SOCPlayerState op = playersInfo.get(Integer.valueOf(pn.getPlayerNumber()));
+	   PlayerState op = playersInfo.get(Integer.valueOf(pn.getPlayerNumber()));
 	   int[] resOp = op.getResources();
-	   SOCPlayerState ourPlayer = playersInfo.get(ourPlayerNumber);
+	   PlayerState ourPlayer = playersInfo.get(ourPlayerNumber);
 	   int[] resOur = ourPlayer.getResources();
 	   if (resOp[res] == 0) {
 		   /*if the opponent has no resources of the given type we decrease the resources of the
@@ -517,7 +521,7 @@ public class SOCState {
     * @param currentPlayerWithLA - (LA -Largest Army award)
     */
    public void updatePlayedKnightCard(SOCPlayer pn, boolean willGetLA, SOCPlayer currentPlayerWithLA) {
-	   SOCPlayerState pnState = getPlayerState(pn);
+	   PlayerState pnState = getPlayerState(pn);
 	   int[] devCards = pnState.getDevCards();
 		//decrease the number of old knight cards in our hand
 		devCards[7]--;
@@ -604,25 +608,25 @@ public class SOCState {
    
    
    
-   public HashMap<Integer, SOCPlayerState> getPlayersInfo() {
+   public HashMap<Integer, PlayerState> getPlayersInfo() {
 	   return playersInfo;
    }
    
    public SOCState copySOCState() {
 	   SOCState copy = new SOCState(ourPlayerNumber);
-	   HashMap<Integer, SOCPlayerState> copyPlayersInfo = copy.getPlayersInfo();
+	   HashMap<Integer, PlayerState> copyPlayersInfo = copy.getPlayersInfo();
 	   Iterator<Integer> pnIter = playersInfo.keySet().iterator();
 
        while (pnIter.hasNext())
        {
     	   Integer key = pnIter.next();
-    	   copyPlayersInfo.put(key, new SOCPlayerState(playersInfo.get(key)));
+    	   copyPlayersInfo.put(key, playersInfo.get(key).clone());
        }
 	   
 	   return copy;
    }
    
-   public SOCPlayerState getPlayerState(SOCPlayer pn) {
+   public PlayerState getPlayerState(SOCPlayer pn) {
 	   return(playersInfo.get(Integer.valueOf(pn.getPlayerNumber())));
    }
     

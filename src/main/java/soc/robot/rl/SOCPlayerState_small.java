@@ -6,22 +6,13 @@ public class SOCPlayerState_small extends SOCPlayerState {
 
 	public SOCPlayerState_small() {
 	}
+	
+	public SOCPlayerState_small clone() {
+		SOCPlayerState_small pn = null;
 
-	public SOCPlayerState_small(SOCPlayerState state) {
-		this.resources = Arrays.copyOf(state.resources, state.resources.length);
-		this.points = state.points;
-		this.devCards =  Arrays.copyOf(state.devCards, state.devCards.length);
-		this.resourceProbabilities = Arrays.copyOf(state.resourceProbabilities, 
-				state.resourceProbabilities.length);
-		this.uniqueAdjacentHexes = state.uniqueAdjacentHexes;
-		this.uniqueNumbers = state.uniqueNumbers;
-		this.longestRoad = state.longestRoad;
-		this.playedKnights = state.playedKnights;
-		this.hasLargestArmy = state.hasLargestArmy;
-		this.hasLongestRoad = state.hasLongestRoad;
-		this.ports = Arrays.copyOf(state.ports, state.ports.length);
-		this.blockedByRobber = state.blockedByRobber;
-		this.numberOfPotentialSettlements = state.numberOfPotentialSettlements;
+		pn = (SOCPlayerState_small) super.clone();
+        
+        return pn;
 	}
 	
 	public int stateLength() {

@@ -21,7 +21,7 @@ public class RLStrategyLookupTable_small extends RLStrategyLookupTable {
 		super(game, pn, memory);
 		
 		/*RES MISSING*/
-		state = new SOCState(ourPlayerNumber, players);
+		state = new SOCState_resMissing(ourPlayerNumber, players);
 	    state.updateAll(players, board); 
 
         /* adding to memory the state at the beginning of the game */
@@ -66,7 +66,7 @@ public class RLStrategyLookupTable_small extends RLStrategyLookupTable {
 	}
 	
 	protected float getStateValue(SOCState tmpState) {
-		counter++;
+//		counter++;
     	ArrayList<CustomPair> pn_states = new ArrayList<CustomPair>();
     	int[] secondState = new int[8];
 
