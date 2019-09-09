@@ -62,7 +62,7 @@ protected float getStateValue(SOCState state) {
     			System.out.println("we have mistake");
     		}
     		
-    		float value = states.getStateValue(result);
+    		float value = stateValueFunction.getStates().getStateValue(result);
     		pn_states.add(new Pair<Integer, Float>(Integer.valueOf(points), Float.valueOf(value)));
     	}   
     	
@@ -82,7 +82,7 @@ protected float getStateValue(SOCState state) {
 //					+ Arrays.toString(secondState));
 //		System.out.println("");
     	
-    	float value = states2.getStateValue(secondState);
+    	float value =  stateValueFunction.getStates2().getStateValue(secondState);
 		
 		return value;
 	}
@@ -103,7 +103,7 @@ protected float getStateValue(SOCState state) {
     		System.arraycopy(ourPlayerArray, 0, result, 0, ourPlayerArray.length);
     		System.arraycopy(oppArray, 0, result, ourPlayerArray.length, oppArray.length);
     		float[] oldpnState = oldState.get(opp);		   	
-    		states.store(oldpnState, result, 0.);
+    		 stateValueFunction.getStates().store(oldpnState, result, 0.);
     		oldState.put(opp, result);
     		
     		
@@ -117,7 +117,7 @@ protected float getStateValue(SOCState state) {
 //    		opp.stats();
     		
     		int points = opp.getTotalVP();    		
-    		float value = states.getStateValue(result);
+    		float value = stateValueFunction.getStates().getStateValue(result);
     		pn_states.add(new Pair<Integer, Float>(Integer.valueOf(points), Float.valueOf(value)));
     		
 //    		/*DEBUG*/
@@ -139,9 +139,9 @@ protected float getStateValue(SOCState state) {
 //		System.out.println("In pn" + ourPlayerNumber + " state2: " 
 //					+ Arrays.toString(secondState));
     	
-    	states2.store(oldState2, secondState, 0.);
+    	stateValueFunction.getStates2().store(oldState2, secondState, 0.);
     	oldState2 = secondState;	    	
-    	currentStateValue = states2.getStateValue(secondState);
+    	currentStateValue = stateValueFunction.getStates2().getStateValue(secondState);
 	}
 
 	@Override
@@ -174,9 +174,9 @@ protected float getStateValue(SOCState state) {
 	    			reward = 0.5;
 	    		}
 	    		
-	    		states.store(oldpnState, result, reward);
+	    		stateValueFunction.getStates().store(oldpnState, result, reward);
 		
-	    		float value = states.getStateValue(result);
+	    		float value = stateValueFunction.getStates().getStateValue(result);
 	    		pn_states.add(new Pair<Integer, Float>(Integer.valueOf(points), Float.valueOf(value)));
 	    		
 //	    		/*DEBUG*/
@@ -204,6 +204,6 @@ protected float getStateValue(SOCState state) {
 //			System.out.println("In pn" + ourPlayerNumber + " state2: " 
 //						+ Arrays.toString(secondState));
 	    	
-	    	states2.store(oldState2, secondState, reward);
+	    	stateValueFunction.getStates2().store(oldState2, secondState, reward);
 	 }
 }

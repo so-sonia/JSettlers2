@@ -32,6 +32,8 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Vector;
 
+import fasttester.BotServer;
+
 
 /**
  * This is a representation of the board in Settlers of Catan.
@@ -776,6 +778,9 @@ public abstract class SOCBoard implements Serializable, Cloneable
         initHexIDtoNumAux(0x71, 0xD7, 33); // Bottom horizontal row: 4 hexes across
 
         initNodesOnLand();
+        
+        /*added by Sonia*/
+        rand.setSeed(BotServer.SEED);
     }
 
     /**

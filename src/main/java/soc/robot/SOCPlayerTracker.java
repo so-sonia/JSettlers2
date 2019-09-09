@@ -845,6 +845,226 @@ public class SOCPlayerTracker
         if ((rs instanceof SOCShip) && game.isGameOptionSet(SOCGameOption.K_SC_PIRI))
             updateScenario_SC_PIRI_closestShipToFortress((SOCShip) rs, true);
     }
+    
+    
+    public void addOurNewRoadOrShip2
+    (final SOCRoutePiece rs, HashMap<Integer, SOCPlayerTracker> trackers, final int expandLevel)
+{
+    //D.ebugPrintln("$$$ addOurNewRoad : "+road);
+    //
+    // see if the new road was a possible road
+    //
+    Iterator<SOCPossibleRoad> prIter = possibleRoads.values().iterator();
+
+    while (prIter.hasNext())
+    {
+        SOCPossibleRoad pr = prIter.next();
+
+        //
+        // reset all expanded flags for possible roads
+        //
+        pr.resetExpandedFlag();
+
+        if (pr.getCoordinates() == rs.getCoordinates())
+        {
+            //
+            // if so, remove it
+            //
+            //D.ebugPrintln("$$$ removing "+Integer.toHexString(road.getCoordinates()));
+            possibleRoads.remove(Integer.valueOf(pr.getCoordinates()));
+            removeFromNecessaryRoads(pr);
+
+            break;
+        }
+    }
+
+    //D.ebugPrintln("$$$ checking for possible settlements");
+    //
+    // see if this road/ship adds any new possible settlements
+    //
+    // check adjacent nodes to road for potential settlements
+    //
+    final SOCBoard board = game.getBoard();
+    Collection<Integer> adjNodeEnum = board.getAdjacentNodesToEdge(rs.getCoordinates());
+
+    for (Integer adjNode : adjNodeEnum)
+    {
+        if (player.canPlaceSettlement(adjNode.intValue()))
+        {
+            //
+            // see if possible settlement is already in the list
+            //
+            //D.ebugPrintln("$$$ seeing if "+Integer.toHexString(adjNode.intValue())+" is already in the list");
+            SOCPossibleSettlement posSet = possibleSettlements.get(adjNode);
+
+            if (posSet != null)
+            {
+                //
+                // if so, clear necessary road list and remove from np lists
+                //
+                //D.ebugPrintln("$$$ found it");
+                removeFromNecessaryRoads(posSet);
+                posSet.getNecessaryRoads().clear();
+                posSet.setNumberOfNecessaryRoads(0);
+            }
+            else
+            {
+                //
+                // else, add new possible settlement
+                //
+                //D.ebugPrintln("$$$ adding new possible settlement at "+Integer.toHexString(adjNode.intValue()));
+                SOCPossibleSettlement newPosSet = new SOCPossibleSettlement(player, adjNode.intValue(), null);
+                newPosSet.setNumberOfNecessaryRoads(0);
+                possibleSettlements.put(adjNode, newPosSet);
+                updateSettlementConflicts(newPosSet, trackers);
+            }
+        } else {
+        	if (possibleSettlements.get(adjNode)!=null) 
+        		possibleSettlements.remove(adjNode);
+        }
+    }
+
+    //D.ebugPrintln("$$$ checking roads adjacent to "+Integer.toHexString(road.getCoordinates()));
+    //
+    // see if this road adds any new possible roads
+    //
+    ArrayList<SOCPossibleRoad> newPossibleRoads = new ArrayList<SOCPossibleRoad>();
+    ArrayList<SOCPossibleRoad> roadsToExpand = new ArrayList<SOCPossibleRoad>();
+
+    //
+    // check adjacent edges to road
+    //
+    for (Integer adjEdge : board.getAdjacentEdgesToEdge(rs.getCoordinates()))
+    {
+        final int edge = adjEdge.intValue();
+
+        //D.ebugPrintln("$$$ edge "+Integer.toHexString(adjEdge.intValue())+" is legal:"+player.isPotentialRoad(adjEdge.intValue()));
+        //
+        // see if edge is a potential road
+        // or ship to continue this route
+        //
+        boolean edgeIsPotentialRoute =
+            (rs.isRoadNotShip())
+            ? player.isPotentialRoad(edge)
+            : player.isPotentialShip(edge);
+
+        // If true, this edge transitions
+        // between ships <-> roads, at a
+        // coastal settlement
+        boolean edgeRequiresCoastalSettlement = false;
+
+        if ((! edgeIsPotentialRoute)
+            && game.hasSeaBoard)
+        {
+            // Determine if can transition ship <-> road
+            // at a coastal settlement
+            final int nodeBetween = ((SOCBoardLarge) board).getNodeBetweenAdjacentEdges(rs.getCoordinates(), edge);
+            if (player.canPlaceSettlement(nodeBetween))
+            {
+                // check opposite type at transition
+                edgeIsPotentialRoute = (rs.isRoadNotShip())
+                    ? player.isPotentialShip(edge)
+                    : player.isPotentialRoad(edge);
+
+                if (edgeIsPotentialRoute)
+                    edgeRequiresCoastalSettlement = true;
+            }
+        }
+
+        if (edgeIsPotentialRoute)
+        {
+            //
+            // see if possible road is already in the list
+            //
+            SOCPossibleRoad pr = possibleRoads.get(adjEdge);
+
+            if (pr != null)
+            {
+                // if so, it must be the same type for now (TODO).
+                //   For now, can't differ along a coastal route.
+                if (edgeRequiresCoastalSettlement && (pr.isRoadNotShip() != rs.isRoadNotShip()))
+                {
+                    continue;  // <--- road vs ship mismatch ---
+                }
+
+                //
+                // if so, clear necessary road list and remove from np lists
+                //
+                //D.ebugPrintln("$$$ pr "+Integer.toHexString(pr.getCoordinates())+" already in list");
+                if (! pr.getNecessaryRoads().isEmpty())
+                {
+                    //D.ebugPrintln("$$$    clearing nr list");
+                    removeFromNecessaryRoads(pr);
+                    pr.getNecessaryRoads().clear();
+                    pr.setNumberOfNecessaryRoads(0);
+                }
+
+                roadsToExpand.add(pr);
+                pr.setExpandedFlag();
+            }
+            else
+            {
+                //
+                // else, add new possible road
+                //
+                //D.ebugPrintln("$$$ adding new pr at "+Integer.toHexString(adjEdge.intValue()));
+                SOCPossibleRoad newPR;
+                final int roadsBetween;  // for effort if requires settlement
+                boolean isRoad = rs.isRoadNotShip();
+                if (edgeRequiresCoastalSettlement)
+                {
+                    isRoad = ! isRoad;
+                    roadsBetween = 2;  // roughly account for effort & cost of new settlement
+                } else {
+                    roadsBetween = 0;
+                }
+
+                // use coastal road/ship type (isCoastalRoadAndShip) only if we can
+                // require a coastal settlement to switch from road-only or ship-only
+                final boolean isCoastal = edgeRequiresCoastalSettlement
+                    && player.isPotentialRoad(edge) && player.isPotentialShip(edge);
+
+                if (isRoad && ! isCoastal)
+                {
+                    newPR = new SOCPossibleRoad(player, edge, null);
+                } else {
+                    newPR = new SOCPossibleShip(player, edge, isCoastal, null);
+                    System.err.println
+                        ("L793: " + toString() + ": new PossibleShip(" + isCoastal + ") at 0x" + Integer.toHexString(edge));
+                }
+                newPR.setNumberOfNecessaryRoads(roadsBetween);  // 0 unless requires settlement
+                newPossibleRoads.add(newPR);
+                roadsToExpand.add(newPR);
+                newPR.setExpandedFlag();
+            }
+        }
+    }
+
+    //
+    // add the new roads to our list of possible roads
+    //
+    for (SOCPossibleRoad newPR : newPossibleRoads)
+    {
+        possibleRoads.put(Integer.valueOf(newPR.getCoordinates()), newPR);
+    }
+
+    //
+    // expand possible roads that we've touched or added
+    //
+    SOCPlayer dummy = new SOCPlayer(player);
+    for (SOCPossibleRoad expandPR : roadsToExpand)
+    {
+        expandRoadOrShip(expandPR, player, dummy, trackers, expandLevel);
+    }
+
+    dummy.destroyPlayer();
+
+    //
+    // in scenario _SC_PIRI, update the closest ship to our fortress
+    //
+    if ((rs instanceof SOCShip) && game.isGameOptionSet(SOCGameOption.K_SC_PIRI))
+        updateScenario_SC_PIRI_closestShipToFortress((SOCShip) rs, true);
+}
 
     /**
      * Expand a possible road or ship, to see what placements it makes possible.

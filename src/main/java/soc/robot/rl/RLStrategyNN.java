@@ -1,5 +1,4 @@
 package soc.robot.rl;
-/*TODO: states2 has no intercept, add it in StateValueFunction*/
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -23,9 +22,7 @@ public class RLStrategyNN extends RLStrategy {
 	
 	float[] oldState2;
 	
-	StateValueFunction states;
-	
-	StateValueFunction states2;
+	StateValueFunctionNNDouble stateValueFunction;
 
 	public RLStrategyNN(SOCGame game, int pn) {
 		super(game, pn);
@@ -56,7 +53,7 @@ public class RLStrategyNN extends RLStrategy {
 		   	SOCPlayer player = playersIter.next();
     		float[] pnState = state.getPlayerState(player).getNormalizedStateArray();
     		int points = player.getTotalVP();
-    		float value = states.getStateValue(pnState);
+    		float value = stateValueFunction.getStates().getStateValue(pnState);
    		
     		if (player.getPlayerNumber()==ourPlayerNumber) {
     			secondState[0] = Integer.valueOf(points)/10.0f;
@@ -90,7 +87,7 @@ public class RLStrategyNN extends RLStrategy {
 //		System.out.println("In pn" + ourPlayerNumber + " state2: " 
 //					+ Arrays.toString(secondState));
     	
-    	float value = states2.getStateValue(secondState);
+    	float value = stateValueFunction.getStates2().getStateValue(secondState);
 		
 		return value;
 	}
@@ -107,11 +104,11 @@ public class RLStrategyNN extends RLStrategy {
 		   	SOCPlayer player = playersIter.next();
 		   	float[] oldpnState = oldState.get(player);		   	
     		float[] pnState = state.getPlayerState(player).getNormalizedStateArray();
-    		states.store(oldpnState, pnState, 0.);
+    		stateValueFunction.getStates().store(oldpnState, pnState, 0.);
     		oldState.put(player, pnState);
    
     		int points = player.getTotalVP();
-    		float value = states.getStateValue(pnState);
+    		float value = stateValueFunction.getStates().getStateValue(pnState);
    		
     		if (player.getPlayerNumber()==ourPlayerNumber) {
     			secondState[0] = Integer.valueOf(points)/10.0f;
@@ -135,13 +132,13 @@ public class RLStrategyNN extends RLStrategy {
     		secondState[(i+1)*2 + 1] = pn_states.get(i).getValue().floatValue();
     	}
     	
-    	states2.store(oldState2, secondState, 0.);
+    	stateValueFunction.getStates2().store(oldState2, secondState, 0.);
     	
     	/*DEBUG*/
 //		System.out.println("In pn" + ourPlayerNumber + " state2: " 
 //					+ Arrays.toString(secondState));
     	oldState2 = secondState;	    	
-    	currentStateValue = states2.getStateValue(secondState);
+    	currentStateValue = stateValueFunction.getStates2().getStateValue(secondState);
 	}
 
 	@Override
@@ -165,10 +162,10 @@ public class RLStrategyNN extends RLStrategy {
 	    		} else {
 	    			reward = 0;
 	    		}
-	    		states.store(oldpnState, pnState, reward);
+	    		stateValueFunction.getStates().store(oldpnState, pnState, reward);
 	   
 	    		int points = player.getTotalVP();
-	    		float value = states.getStateValue(pnState);
+	    		float value = stateValueFunction.getStates().getStateValue(pnState);
 	   		
 	    		if (player.getPlayerNumber()==ourPlayerNumber) {
 	    			secondState[0] = Integer.valueOf(points)/10.0f;
@@ -198,19 +195,15 @@ public class RLStrategyNN extends RLStrategy {
     			reward = 0;
     		}
 	    	
-	    	states2.store(oldState2, secondState, reward);
+	    	stateValueFunction.getStates2().store(oldState2, secondState, reward);
 	    	
 	    	/*DEBUG*/
 //			System.out.println("In pn" + ourPlayerNumber + " state2: " 
 //						+ Arrays.toString(secondState));
 	 }
 	
-	public void setStates(StateValueFunction states) {
-		this.states = states;
-	}
-	
-	public void setStates2(StateValueFunction states) {
-		this.states2 = states;
+	public void setStateValueFunction(StateValueFunction svf) {
+		this.stateValueFunction = (StateValueFunctionNNDouble) svf;
 	}
 	
 	/* we need to override this method, because in RLStrategyNN 

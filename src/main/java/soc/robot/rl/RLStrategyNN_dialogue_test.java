@@ -2,13 +2,12 @@ package soc.robot.rl;
 
 import soc.game.SOCGame;
 
-public class RLStrategyLookupTable_test extends RLStrategyLookupTable {
+public class RLStrategyNN_dialogue_test extends RLStrategyNN_dialogue {
 
-	public RLStrategyLookupTable_test(SOCGame game, int pn) {
+	public RLStrategyNN_dialogue_test(SOCGame game, int pn) {
 		super(game, pn);
 	}
 	
-	@Override
 	protected void updateStateValue() {
 		state.updateAll(players, board);
 		currentStateValue = Float.valueOf(getStateValue(state));
@@ -21,4 +20,5 @@ public class RLStrategyLookupTable_test extends RLStrategyLookupTable {
 	@Override
 	public void updateReward(int winner) {
 	}
+
 }

@@ -1,5 +1,6 @@
 package soc.robot.rl;
 
+//TODO: bot can play road cards even if only one road available => he will build just one, but for free 
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -816,7 +817,7 @@ public abstract class RLStrategy {
   	ArrayList<int[]> tradeOffer = new ArrayList<int[]>();
   	
   	boolean[] ports = ourPlayerData.getPortFlags();
-  	int[] plRes = tmpState.getPlayerState(ourPlayerData).getResources();
+  	int[] plRes = ourPlayerData.getResources().getAmounts(false);
   	int[] plResources = Arrays.copyOf(plRes, plRes.length);
   	
 //  	/*DEBUG*/
@@ -916,7 +917,7 @@ public abstract class RLStrategy {
   	ArrayList<Float> state_values = new ArrayList<Float>();
   	int[] res = new int[] {0, 1, 2, 3, 4};
   	ArrayList<int[]> allCardsDiscard = new ArrayList<int[]>();
-  	int[] plResources =  state.getPlayerState(ourPlayerData).getResources();
+  	int[] plResources =  ourPlayerData.getResources().getAmounts(false);
 
   	
   	/*find all combinations of given resources of length equal to number of cards we 
@@ -942,7 +943,7 @@ public abstract class RLStrategy {
 //      			Arrays.toString(cards));
 
   		tmpState.updateResources(ourPlayerData, false);
-			tmpState.updateSubstractResources(res, cards);
+		tmpState.updateSubstractResources(res, cards);
   		
   		state_values.add(Float.valueOf(getStateValue(tmpState)));    		   		
   	}
@@ -1008,11 +1009,11 @@ public abstract class RLStrategy {
   		AbstractMap.SimpleEntry<Float, int[]> discards = searchDiscardAfterSevenRolled( (int)numCards/2 );
   		int[] cardsDiscard = discards.getValue();
   		int[] res = new int[] {0, 1, 2, 3, 4};
-			tmpState.updateSubstractResources(res, cardsDiscard);
+		tmpState.updateSubstractResources(res, cardsDiscard);
   	}
   	
   	//we pass a copy of tmpState, because searchPlaceRobberOrPlayKnight updates resources
-		SOCState tmpState2 = tmpState.copySOCState();
+	SOCState tmpState2 = tmpState.copySOCState();
   	
   	AbstractMap.SimpleEntry<Float, int[]> resultRobber = searchPlaceRobberOrPlayKnight(tmpState2, false);
   	
@@ -1317,6 +1318,8 @@ public abstract class RLStrategy {
 //  protected abstract void synchroniseMemory();
   
   public abstract void updateReward();
+  
+  public abstract void setStateValueFunction(StateValueFunction svf);
   
   public void updateReward(int winner) {
 	  

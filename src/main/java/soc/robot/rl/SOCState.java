@@ -411,6 +411,13 @@ public class SOCState {
 	   updateNumberOfPotentialSettlements(pn);
    }
    
+   /**
+    * After placing the city information about number of adjacent buildings, 
+    * points and potential settlements is updated. Resource probabilities are not changed 
+    * when the city is built.
+    * @param pn
+    * @param board
+    */
    public void updatePlaceCity(SOCPlayer pn,  SOCBoard board) {
 	   updateBoardInfoOnBuildings(pn, board, board.getRobberHex());
 	   updatePoints(pn);
@@ -458,7 +465,8 @@ public class SOCState {
 	   int[] resOur = ourPlayer.getResources();
 	   if (resOp[res] == 0) {
 		   /*if the opponent has no resources of the given type we decrease the resources of the
-		    * unknown type (we check that opponent ha resources of unknown type before calling this function)
+		    * unknown type (we check that opponent has resources of unknown type before calling this function)
+		    * in searchPlaceRobberOrPlayKnight()
 		    */
 		   if(!all) {
 			   resOp[SOCResourceConstants.UNKNOWN-1]--;

@@ -4935,7 +4935,7 @@ public class SOCPlayer implements SOCDevCardConstants, Serializable, Cloneable
         			+ getSettlements().size() + ", "
         			+ getCities().size() + ", "
         			+ getRoadsAndShips().size() + ", "
-        			+ res + ","
+        			+ res + ", "
         			+ portsString 
         			);
             writer.newLine();

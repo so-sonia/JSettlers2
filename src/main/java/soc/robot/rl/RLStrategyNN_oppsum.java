@@ -19,7 +19,7 @@ public class RLStrategyNN_oppsum extends RLStrategy {
 
 	INDArray oldState;
 	
-	StateValueFunction states;
+	StateValueFunctionNN stateValueFunction;
 	
 	
 	public RLStrategyNN_oppsum(SOCGame game, int pn) {
@@ -56,7 +56,7 @@ public class RLStrategyNN_oppsum extends RLStrategy {
 //    ourPlayerData.stats();
 //    System.out.println(states.getStateValue(oppsum));
 	    
-	    return states.getStateValue(oppsum);		
+	    return stateValueFunction.getStates().getStateValue(oppsum);		
 	}
 
 	@Override
@@ -75,9 +75,9 @@ public class RLStrategyNN_oppsum extends RLStrategy {
 //	    /*DEBUG*/
 //	    System.out.println(oppsum);
 	    
-	    states.store(oldState, oppsum, 0.);
+	    stateValueFunction.getStates().store(oldState, oppsum, 0.);
 		oldState = oppsum;
-		currentStateValue = states.getStateValue(oppsum);
+		currentStateValue = stateValueFunction.getStates().getStateValue(oppsum);
 	}
 
 	@Override
@@ -104,12 +104,9 @@ public class RLStrategyNN_oppsum extends RLStrategy {
 	    opps.divi(opponents.size());
 	    INDArray oppsum = Nd4j.concat(1, ourPlayerArray, opps);
 	    
-	    states.store(oldState, oppsum, reward); 
+	    stateValueFunction.getStates().store(oldState, oppsum, reward); 
 	}
 	
-	public void setStates(StateValueFunction states) {
-		this.states = states;
-	}
 	
 	/* we need to override this method, because in RLStrategyNN 
 	 * we use resourceProbabilities as float[] and not int[].
@@ -331,7 +328,12 @@ public class RLStrategyNN_oppsum extends RLStrategy {
 	  	placeAndPlayerToRob[1] = playersToRob.get(maxAndIndex.getValue());
 	  	AbstractMap.SimpleEntry<Float, int[]> result = new AbstractMap.SimpleEntry<Float, int[]>(
 	  			maxAndIndex.getKey(), placeAndPlayerToRob);
-	  	return(result);  	
+	  	return(result); 
 	  }
+	  
+	  @Override
+	  public void setStateValueFunction(StateValueFunction svf) {
+	  	this.stateValueFunction = (StateValueFunctionNN) svf;	
+	  } 	
 
 }

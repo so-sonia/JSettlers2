@@ -56,7 +56,7 @@ public class RLStrategyNN_opp4 extends RLStrategyNN_oppsum {
 //    ourPlayerData.stats();
 //    System.out.println(states.getStateValue(oppsum));
 	    
-	    return states.getStateValue(stateArr);		
+	    return stateValueFunction.getStates().getStateValue(stateArr);		
 	}
 
 	@Override
@@ -78,9 +78,9 @@ public class RLStrategyNN_opp4 extends RLStrategyNN_oppsum {
 //	    /*DEBUG*/
 //	    System.out.println(oppsum);
 	    
-	    states.store(oldState, stateArr, 0.);
+	    stateValueFunction.getStates().store(oldState, stateArr, 0.);
 		oldState = stateArr;
-		currentStateValue = states.getStateValue(stateArr);
+		currentStateValue = stateValueFunction.getStates().getStateValue(stateArr);
 	}
 	
 	
@@ -102,7 +102,7 @@ public class RLStrategyNN_opp4 extends RLStrategyNN_oppsum {
 	    opps.divi(opponents.size());
 	    INDArray oppsum = Nd4j.concat(1, ourPlayerArray, opps);
 	    
-	    states.store(oldState, oppsum, reward); 
+	    stateValueFunction.getStates().store(oldState, oppsum, reward); 
 	}
 	
 

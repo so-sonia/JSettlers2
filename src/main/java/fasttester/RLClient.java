@@ -28,6 +28,8 @@ import soc.robot.rl.RLStrategyLookupTable_small;
 import soc.robot.rl.RLStrategyLookupTable_small_test;
 import soc.robot.rl.RLStrategyLookupTable_test;
 import soc.robot.rl.RLStrategyNN;
+import soc.robot.rl.RLStrategyNN_dialogue;
+import soc.robot.rl.RLStrategyNN_dialogue_test;
 import soc.robot.rl.RLStrategyNN_opp1;
 import soc.robot.rl.RLStrategyNN_opp1_test;
 import soc.robot.rl.RLStrategyNN_opp4;
@@ -37,6 +39,8 @@ import soc.robot.rl.RLStrategyNN_test;
 import soc.robot.rl.RLStrategyRandom;
 import soc.robot.rl.StateMemoryLookupTable;
 import soc.robot.rl.StateValueFunction;
+import soc.robot.rl.StateValueFunctionLT;
+import soc.robot.rl.StateValueFunctionNN;
 import soc.robot.rl.RLStrategy;
 
 public class RLClient {
@@ -44,12 +48,14 @@ public class RLClient {
 	/* type of RLClients, type indicates how states values are stored (lookup table, neural network)
 	 * and whether bot updates values (training) or only uses them (testing)
 	 */
-	public static final int RANDOM = 0;
+	public static final int RANDOM  = 0;
 	public static final int TRAIN_LOOKUP_TABLE = 1;
 	public static final int TEST_LOOKUP_TABLE= 2;
 	public static final int TRAIN_NN = 3;
 	public static final int TEST_NN = 4;
-	
+	public static final int FAST_BUILTIN = 5;
+	public static final int SMART_BUILTIN = 6;
+
 	protected int playerNumber;
 	
 	protected String name;
@@ -71,8 +77,10 @@ public class RLClient {
 	 * "update type if changed memory"
 	 */
 //	protected StateMemoryLookupTable memory;
-	protected StateValueFunction memory;
-	protected StateValueFunction memory2;
+//	protected StateValueFunction memory;
+//	protected StateValueFunction memory2;
+	protected StateValueFunction stateValueFunction;
+	
 	
 	/**
 	 * Responsible for all logic behind bots moves. Uses Reinforcement learning algorithm to 
@@ -94,60 +102,29 @@ public class RLClient {
     protected SOCResourceSet[] bankTrade;
     
     protected int lastStartingRoadTowardsNode;
-	
-    /*used for shared memory, had to comment, because of another memory type
-     * update type if changed memory
-     */
-//    public RLClient(int i, int strategyType, int memoryType, StateMemoryLookupTable memory) {
-//    	if (memory==null) {
-//    		/*update type if changed memory*/
-//    		this.memory = new StateMemoryLookupTable(i);
-//    	} else {
-//    		this.memory = memory;
-//    	}    
-//    	
-//    	playerNumber = i;
-//		name = "rlbot" + i;
-//		this.strategyType = strategyType;
-//		
-//		/*DEBUGA*/
-//		switch (strategyType) {
-//		case RLClient.RANDOM:
-//			System.out.println("Random bot created number: " + playerNumber);
-//			break;
-//		case RLClient.TRAIN_LOOKUP_TABLE:
-//			System.out.println("Train lookup table bot created number: " + playerNumber);
-//			break;
-//		case RLClient.TEST_LOOKUP_TABLE:
-//			System.out.println("Test lookup table bot created number: " + playerNumber);
-//			break;
-//		case RLClient.TRAIN_NN:
-//			System.out.println("Train Neural Network bot created number: " + playerNumber);
-//			break;
-//		}
-//		
-//    }
+    
     
     /*Depending on strategy type RLStrategy is created with neural networks or with lookup table*/
 	public RLClient(int i, int strategyType, int memoryType) {
 		playerNumber = i;
 		name = "rlbot" + i;
 		
-		/*update type if changed memory*/
-//		this.memory = new StateMemoryLookupTable(i);
-//		this.memory = new StateValueFunction(i, 33);
-//		this.memory2 = new StateValueFunction(i, 8);
-		//for RLStrategyNN_opp1
-		this.memory = new StateValueFunction(i, 72);
-//		this.memory2 = new StateValueFunction(i, 7);
-        
-		
 		this.strategyType = strategyType;
 		
 		/*read memory if filenumber provided*/
 		if (memoryType!=-1) {
 			if (strategyType==RLClient.TEST_LOOKUP_TABLE || strategyType==RLClient.TRAIN_LOOKUP_TABLE) {
-				memory.readMemory(getName()+ "_" + memoryType);
+//				memory.readMemory(getName()+ "_" + memoryType);
+				this.stateValueFunction = new StateValueFunctionLT(false, i);
+				stateValueFunction.readMemory(getName()+ "_" + memoryType);
+			}
+		} else {
+			if (strategyType==RLClient.TEST_LOOKUP_TABLE || strategyType==RLClient.TRAIN_LOOKUP_TABLE) {
+//				memory.readMemory(getName()+ "_" + memoryType);
+				this.stateValueFunction = new StateValueFunctionLT(true, i);
+			} else if (strategyType==RLClient.TEST_NN|| strategyType==RLClient.TRAIN_NN) {
+				/*changed type if changed memory*/
+				this.stateValueFunction = new StateValueFunctionNN(true, i);
 			}
 		}
 		
@@ -168,58 +145,56 @@ public class RLClient {
 		case RLClient.TEST_NN:
 			System.out.println("Test Neural Network bot created number: " + playerNumber);
 			break;
-			
+		case RLClient.FAST_BUILTIN:
+			System.out.println("Fast Built In bot created number: " + playerNumber);
+			break;
+		case RLClient.SMART_BUILTIN:
+			System.out.println("Smart Built In bot created number: " + playerNumber);
+			break;
 		}
 		
 	}
 	
-	public void joinGame(String name, int[] botNumbers, String[] botNames) {
-		game = new SOCGame(name);
-		
-		for (int i=0; i<botNumbers.length; i++) {
-			game.addPlayer(botNames[i], botNumbers[i]);
-			
-             /**
-              * set the robot flag
-              */
-//			game.getPlayer(botNumbers[i]).setRobotFlag(true, false);
-		}
-		game.isBotsOnly = true;
-		
+	/**used in child classes, to play with fullinfo server*/
+	public void joinGame(SOCGame game) {
+		this.game = game;
 		
 		ourPlayerData = game.getPlayer(getName());
 		openingBuildStrategy = new OpeningBuildStrategy(game, ourPlayerData);
 		
 		switch (strategyType) {
-//		    /*update type if changed memory
-//		had to comment out becaouse of changed to NN*/
+		
 			case RLClient.RANDOM:
-//				System.out.println("Random bot created number: " + playerNumber);
+	//			System.out.println("Random bot created number: " + playerNumber);
 				rlStrategy = new RLStrategyRandom(game, playerNumber);
 				break;
-//			case RLClient.TRAIN_LOOKUP_TABLE:
-////				System.out.println("Train lookup table bot created number: " + playerNumber);
-//				rlStrategy = new RLStrategyLookupTable_small(game, playerNumber, memory);
-//				break;
-//			case RLClient.TEST_LOOKUP_TABLE:
-////				System.out.println("Test lookup table bot created number: " + playerNumber);
-//				rlStrategy = new RLStrategyLookupTable_small_test(game, playerNumber, memory);
-//				break;
+			case RLClient.TRAIN_LOOKUP_TABLE:
+	//			System.out.println("Train lookup table bot created number: " + playerNumber);
+				RLStrategyLookupTable rlStrategyLT = new RLStrategyLookupTable(game, playerNumber);
+				rlStrategyLT.setStateValueFunction(stateValueFunction);
+				rlStrategy = rlStrategyLT;
+				break;
+			case RLClient.TEST_LOOKUP_TABLE:
+	//			System.out.println("Test lookup table bot created number: " + playerNumber);
+				RLStrategyLookupTable rlStrategyLTtest  = new RLStrategyLookupTable_test(game, playerNumber);
+				rlStrategyLTtest.setStateValueFunction(stateValueFunction);
+				rlStrategy = rlStrategyLTtest;
+				break;
 			case RLClient.TRAIN_NN:
 //				RLStrategyNN rlStrategyTemp = new RLStrategyNN(game, playerNumber);
 //				RLStrategyNN_opp1 rlStrategyTemp = new RLStrategyNN_opp1(game, playerNumber);
-				RLStrategyNN_oppsum rlStrategyTemp = new RLStrategyNN_oppsum(game, playerNumber);
+//				RLStrategyNN_oppsum rlStrategyTemp = new RLStrategyNN_oppsum(game, playerNumber);
 //				RLStrategyNN_opp4 rlStrategyTemp = new RLStrategyNN_opp4(game, playerNumber);
-				rlStrategyTemp.setStates(memory);
-//				rlStrategyTemp.setStates2(memory2);
+				RLStrategyNN_dialogue rlStrategyTemp = new RLStrategyNN_dialogue(game, playerNumber);				
+				rlStrategyTemp.setStateValueFunction(stateValueFunction);
 				rlStrategy = rlStrategyTemp;
 				break;
 			case RLClient.TEST_NN:
 //				RLStrategyNN_test rlStrategyTempTest = new RLStrategyNN_test(game, playerNumber);
 //				RLStrategyNN_opp1_test rlStrategyTempTest = new RLStrategyNN_opp1_test(game, playerNumber);
-				RLStrategyNN_oppsum_test rlStrategyTempTest = new RLStrategyNN_oppsum_test(game, playerNumber);
-				rlStrategyTempTest.setStates(memory);
-//				rlStrategyTempTest.setStates2(memory2);
+//				RLStrategyNN_oppsum_test rlStrategyTempTest = new RLStrategyNN_oppsum_test(game, playerNumber);
+				RLStrategyNN_dialogue_test rlStrategyTempTest= new RLStrategyNN_dialogue_test(game, playerNumber);
+				rlStrategyTempTest.setStateValueFunction(stateValueFunction);
 				rlStrategy = rlStrategyTempTest;
 				break;
 		}
@@ -233,6 +208,38 @@ public class RLClient {
 //		ourTurn = false;
 	}
 	
+	/**RlStrategies are created and {@link RLClient#stateValueFunction} is passed, which
+	 * has memory from all previous games.
+	 * 
+	 * @param name of the player
+	 * @param botNumbers - used to add opponents to our version of game
+	 * @param botNames
+	 */
+	public void joinGame(String name, int[] botNumbers, String[] botNames) {
+		game = new SOCGame(name);
+		
+		for (int i=0; i<botNumbers.length; i++) {
+			game.addPlayer(botNames[i], botNumbers[i]);
+			
+             /**
+              * set the robot flag
+              */
+//			game.getPlayer(botNumbers[i]).setRobotFlag(true, false);
+		}
+		game.isBotsOnly = true;
+		
+		joinGame(game);
+		
+	}
+	
+	/**
+	 * Board is randomly created in the instant of the game at server, 
+	 * information about the board must be passed to all players
+	 * @param hexes - order of hexes on the board
+	 * @param numbers - number belonging to each hex
+	 * @param robber - where is desert hex (robber at the beginning of the game 
+	 * in on the desert hex.
+	 */
 	public void setBoardLayout(int[] hexes, int[] numbers, int robber) {
 		if (game != null) {
 			SOCBoard bd = game.getBoard();
@@ -259,6 +266,11 @@ public class RLClient {
 		return game;
 	}
 
+	/**
+	 * Used at the beginning of the game, from the game at server we
+	 * pass places, where clients can put their settlements.
+	 * @param psList - list of potential settlements
+	 */
 	public void handlePotentialSettlements(HashSet<Integer> psList) {
 		for (int pn = game.maxPlayers - 1; pn >= 0; --pn)
         {
@@ -268,10 +280,19 @@ public class RLClient {
 		
 	}
 	
+	/**
+	 * Set the player who is making the first move
+	 * @param pn - player number
+	 */
 	public void handleFirstPlayer(int pn) {
 		game.setFirstPlayer(pn);
 	}
 	
+	
+	/**
+	 * Game state is set on client's version of the game
+	 * @param newState
+	 */
 	public void handleGAMESTATE(int newState) {
 		if (newState == 0)
             return;
@@ -279,10 +300,10 @@ public class RLClient {
 	}
 	
 	/**
-	 * 
-	 * @param pn
-	 * @param pieceType
-	 * @param coord
+	 * Place the piece of the given type on client's version of the game
+	 * @param pn player who puts the piece
+	 * @param pieceType type of the piece: road, settlement, city
+	 * @param coord coordinations where the piece should be put
 	 */
     public void handlePUTPIECE(int pn, int pieceType, int coord)
     {
@@ -308,6 +329,13 @@ public class RLClient {
         }
     }
     
+    /**
+     * Game state is set on client's version of the game.
+     * Current player is set and {@link SOCGame#updateAtTurn()} is invoked.
+     * 
+     * @param pn - current player number
+     * @param gs - game state
+     */
     public void handleTURN(int pn, int gs) {
     	 handleGAMESTATE(gs);
 
@@ -315,11 +343,22 @@ public class RLClient {
          game.updateAtTurn();
     }
 	
+    /**
+     * All possible settlements are searched and the best one is chosen
+     * as the place, where client should build
+     * @return id of the first settlement, where client wants to build
+     */
 	public int getFirstSettlement() {
 		final int firstSettleNode = openingBuildStrategy.planInitialSettlements();
 		return firstSettleNode;
 	}
 	
+	/**
+	 * Road must be adjacent to the settlement chosen at the beginning of the game.
+	 * Method is called both after first and second settlement placement:
+	 * {@link RLClient#getFirstSettlement()} or {@link RLClient#getSecondSettlement()}
+	 * @return id of the road
+	 */
 	public int getInitRoad() {
         final int roadEdge = openingBuildStrategy.planInitRoad();
         lastStartingRoadTowardsNode = openingBuildStrategy.getPlannedInitRoadDestinationNode();
@@ -329,6 +368,10 @@ public class RLClient {
         return roadEdge;
     }
 	
+	/**
+	 * Again search is invoked and player choses the best spot for the second settlement
+	 * @return id of the second settlement
+	 */
 	public int getSecondSettlement() {
 		final int secondSettleNode = openingBuildStrategy.planSecondSettlement();
 		if (secondSettleNode == -1) {
@@ -339,16 +382,27 @@ public class RLClient {
 		return secondSettleNode;
 	}
 	
+	/**
+	 * At the beginning of each turn if player has a knight card chose whether to roll or
+	 * play the card
+	 * @return id of the action chosen by the player
+	 */
 	public int rollOrPlayKnight() {
 		AbstractMap.SimpleEntry<Integer, int[]> action = rlStrategy.rollOrPlayKnight();
 		if(action.getKey() == RLStrategy.PLAY_KNIGHT) {
 
-    		
+    		//if knight card is chosen save where we want to move the robber
     		moveRobber = action.getValue();
     	} 
 		return action.getKey();		
 	}
 	
+	/**
+	 * Inventory of the player is changed according to the action.
+	 * @param pn - player who played the dev card
+	 * @param ctype - type of the dev card
+	 * @param action - as in {@link SOCDevCardAction#PLAY}
+	 */
 	public void handleDEVCARDACTION(int pn, int ctype, int action)
     {
 		SOCPlayer player = game.getPlayer(pn);
@@ -389,16 +443,39 @@ public class RLClient {
 //				);
     }
 	
+	/**
+	 * Not used
+	 * @param pn
+	 * @param action
+	 * @param type
+	 * @param amount
+	 */
 	public void handlePLAYERELEMENT(int pn, int action, int type, int amount) {
 		
 	}
 	
+	/**
+	 * Given amount of knight cards is added to the current number of played knight cards.
+	 * Then {@link SOCGame#updateLargestArmy()} is invoked.
+	 * @param pn player for whom tu update number of knights
+	 * @param action currently not used, number of knights is always increased
+	 * @param amount number of knights added to the current number
+	 */
 	public void handlePLAYERELEMENT_numKnights(int pn, int action, int amount) {
 		SOCPlayer player = game.getPlayer(pn);
 		player.setNumKnights(player.getNumKnights() + amount);
 		game.updateLargestArmy();
 	}
 	
+	/**
+	 * All actions regarding resources like gaining, setting or losing are handled here.
+	 * If opponent lost resources of type unknown, first all his resources are converted
+	 * to unknown and then the specified number of resources is subtracted.
+	 * @param pn player for whom we change number of resources
+	 * @param type of the resource
+	 * @param action like in {@link SOCPlayerElement#SET}
+	 * @param amount
+	 */
 	public void handlePlayerElement_numRscs(int pn, int type, int action, int amount) {
 		
 		SOCPlayer pl = game.getPlayer(pn);
@@ -442,6 +519,11 @@ public class RLClient {
         }
 	}
 	
+	/**
+	 * Set the value of the flag
+	 * @param pn - player for  whom to set the playedDevCardFlag
+	 * @param value - of the flag
+	 */
 	public void handlePlayedDevCardFlag(int pn, boolean value) {
 		SOCPlayer player = game.getPlayer(pn);
 		player.setPlayedDevCard(value);
@@ -455,19 +537,41 @@ public class RLClient {
 		return moveRobber[1];
 	}
 	
+	/**
+	 * Set the new location of the robber
+	 * @param coord - id of hex where robber is being moved
+	 */
 	public void handleRobberMoved(int coord) {
 		game.getBoard().setRobberHex(coord, true);
 	}
 	
+	/**
+	 * Returns the set of cards that will be discarde. Called after 7 was rolled.
+	 * 
+	 * @param numCards number of cards that must be discarded
+	 * @return set of cards that can be discarded
+	 */
 	public SOCResourceSet handleDiscard(int numCards) {
 		return rlStrategy.discard(numCards);
 	}
 	
+	/**
+	 * get location where to move robber and the victim
+	 * from whom we want to steal
+	 * @return array with two elements. First is coordination of the hex
+	 * where we want to move the robber. Second is victim from whom we want to steal.
+	 * If there's only one victim, second element is -1, because server will not ask 
+	 * us for the victim.
+	 */
 	public int moveRobber() {
 		moveRobber = rlStrategy.moveRobber();
 		return moveRobber[0];
 	}
 	
+	/**
+	 * During main game after roll, tell server what action client wants to perform
+	 * @return type of action as in {@link RLStrategy#PLACE_CITY}.
+	 */
 	public int buildOrTradeOrPlayCard() {
 		AbstractMap.SimpleEntry<Integer, int[]> action = rlStrategy.buildOrTradeOrPlayCard();
     	
@@ -546,6 +650,11 @@ public class RLClient {
     	}
 	}
 	
+	/**
+	 * After playing the road development card we have to give coordinates
+	 * of the roads we want to build.
+	 * @return array of length 2 containing coordinations of 2 roads
+	 */
 	public int[] getRoadsToBuildCoord() {
 		return roadsToBuildCoord;
 	}
@@ -562,6 +671,11 @@ public class RLClient {
 		return buildingCoord;
 	}
 	
+	/**
+	 * Set number of development card left in the game. 
+	 * Used when someone bought a card.
+	 * @param value number of development cards left in the game
+	 */
 	public void handleDevCardCount(int value) {
 		game.setNumDevCards(value);
 	}
@@ -600,16 +714,21 @@ public class RLClient {
 		return rlStrategy;
 	}
 	
-	public void writeMemory(int n, boolean org) {
-		memory.writeMemory(getName() + "_" + n, org);
-//		memory2.writeMemory(getName() + "_mem2_" + n, org);
+	public void writeMemory(int n) {
+		stateValueFunction.writeMemory(getName() + "_" + n);
 	}
 	
-	public void memoryStats() {
-		memory.memoryStats();
+	public void stateValueFunctionStats() {
+		stateValueFunction.printStats();
+		
+//		memory.memoryStats();
 //		memory.stats();
 	}
 	
+	/**
+	 * Invoke {@link RLStrategy#updateReward(winner)} and reinforce the state value
+	 * @param winner player number of the winner
+	 */
 	public void handleEndGame(int winner) {
 		rlStrategy.updateReward(winner);
 	}
@@ -618,42 +737,33 @@ public class RLClient {
 		rlStrategy.changeLR(alpha);
 	}
 	
-	/*update type if changed memory*/
-//	public StateMemoryLookupTable getMemory() {
-//		return memory;
-//	}
-	
-	public StateValueFunction getMemory1() {
-		return memory;
-	}
-	
-	public StateValueFunction getMemory2() {
-		return memory2;
-	}
-	
 	public void startTraining() {
-		strategyType = RLClient.TRAIN_NN;
-		memory.setIsTraining(true);
-//		memory2.setIsTraining(true);
-		Thread thread = new Thread(memory);
-        thread.start();
-//        Thread thread2 = new Thread(memory2);
-//        thread2.start();
+		if (stateValueFunction!=null) {
+			strategyType = RLClient.TRAIN_NN;
+			stateValueFunction.startTraining();
+		}
 //        memory.printStats();
 	}
 	
 	public void startTesting() {
-		memory.setIsTraining(false);
-//		memory2.setIsTraining(false);
-		strategyType = RLClient.TEST_NN;
+		if (stateValueFunction!=null) {
+			stateValueFunction.startTesting();
+			strategyType = RLClient.TEST_NN;
+		}
 //		memory.printStats();
 	}
 	
 	public void endTraining() {
-		memory.setIsTraining(false);
-//		memory2.setIsTraining(false);
-//		memory.printCounter();
-//		memory2.printCounter();
+		if (stateValueFunction!=null)
+			stateValueFunction.endTraining();
+	}
+
+	public void setStateValueFunction(StateValueFunction sharedSVFunction) {
+		stateValueFunction = sharedSVFunction;		
+	}
+	
+	public StateValueFunction getStateValueFunction() {
+		return stateValueFunction;		
 	}
 
 }

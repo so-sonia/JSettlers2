@@ -6,8 +6,8 @@ import soc.game.SOCGame;
 
 public class RLStrategyLookupTable_small_test extends RLStrategyLookupTable_small {
 
-	public RLStrategyLookupTable_small_test(SOCGame game, int pn, StateMemoryLookupTable memory) {
-		super(game, pn, memory);
+	public RLStrategyLookupTable_small_test(SOCGame game, int pn) {
+		super(game, pn);
 
 	}
 	

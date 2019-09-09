@@ -428,6 +428,10 @@ public class RLStrategyRandom extends RLStrategy {
 //	  	System.out.println("searchRollDice() was called");
 	  	
 	  	return getStateValue(state);
-	  }   
+	  }
+
+	@Override
+	public void setStateValueFunction(StateValueFunction svf) {
+	}   
 
 }
